@@ -1,0 +1,27 @@
+{
+  "name": "spaceships",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/silvanknecht/spaceShips.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/silvanknecht/spaceShips/issues"
+  },
+  "homepage": "https://github.com/silvanknecht/spaceShips#readme",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "express": "^4.16.4",
+    "http": "0.0.0",
+    "path": "^0.12.7",
+    "socket.io": "^2.2.0",
+    "triangle-circle-collision": "^1.0.4"
+  }
+}
