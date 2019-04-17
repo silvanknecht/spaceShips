@@ -9,8 +9,10 @@ class Ship {
     this.y2 = y + this.r / 2;
     this.x3 = x + Math.sin((60 * Math.PI) / 180) * this.r;
     this.y3 = y + this.r / 2;
-    this.TURN_SPEED = 5;
     this.angle = (90 / 180) * Math.PI;
+    this.TURN_SPEED = 5;
+    this.rotatingR = false;
+    this.rotatingL = false;
     this.rotation = 0;
     this.SHIP_THRUST = 5;
     this.thrusting = false;
@@ -18,6 +20,7 @@ class Ship {
       x: 0,
       y: 0
     };
+    this.lasers = [];
   }
 
   move() {
@@ -33,6 +36,13 @@ class Ship {
   }
 
   turn() {
+    if (this.rotatingR) {
+      this.rotation += ((this.TURN_SPEED / 180) * Math.PI) / FPS;
+    } else if (this.rotatingL) {
+      this.rotation -= ((this.TURN_SPEED / 180) * Math.PI) / FPS;
+    } else {
+      this.rotation -= (FRICTION * this.rotation) / FPS;
+    }
     this.angle += this.rotation;
     this.x1 = this.x + (4 / 3) * this.r * Math.cos(this.angle);
     this.y1 = this.y - (4 / 3) * this.r * Math.sin(this.angle);
@@ -50,10 +60,20 @@ class Ship {
 
     this.move();
     this.turn();
+  }  
+
+  shoot() {
+    this.lasers.push(new Laser(this.x1, this.y1,this.angle));
   }
 
   draw() {
+    push();
     fill(255);
     triangle(this.x1, this.y1, this.x2, this.y2, this.x3, this.y3);
+    pop();
+
+    for (let l of this.lasers) {
+      l.update();
+    }
   }
 }
