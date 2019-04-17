@@ -10,7 +10,7 @@ class Ship {
     this.x3 = x + Math.sin((60 * Math.PI) / 180) * this.r;
     this.y3 = y + this.r / 2;
     this.angle = (90 / 180) * Math.PI;
-    this.TURN_SPEED = 5;
+    this.TURN_SPEED = 1;
     this.rotatingR = false;
     this.rotatingL = false;
     this.rotation = 0;
@@ -57,7 +57,6 @@ class Ship {
   }
 
   update() {
-
     this.move();
     this.turn();
   }  

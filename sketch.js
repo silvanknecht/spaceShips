@@ -3,6 +3,7 @@ const FPS = 60;
 const FRICTION = 0.7;
 
 function setup() {
+  frameRate(FPS);
   angleMode(DEGREES);
   createCanvas(1200, 800);
   background(0);

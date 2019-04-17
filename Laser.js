@@ -1,12 +1,12 @@
 class Laser {
     constructor(x1,y1,shipAngle) {
-        this.speed = 0.5;
-        this.length = 10;
+        this.speed = 1;
+        this.length = 20;
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = this.x1 + this.length * Math.cos(shipAngle);
         this.y2 = this.y1 - this.length* Math.sin(shipAngle);
-        this.color = 'rgb(0,255,0)';
+        this.color = 'rgb(255,0,0)';
     }
 
     update() {
