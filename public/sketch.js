@@ -4,7 +4,7 @@ const HEIGHT = 800;
 const WIDTH = 1200;
 const FPS = 60;
 
-let socket = io("http://localhost:3000");
+let socket = io("http://146.136.58.104:3000");
 socket.on("connect", function() {
   console.log("Connected to Server!");
 });

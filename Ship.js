@@ -5,7 +5,7 @@ class Ship {
     this.name = Math.random();
     this.health = 100;
     this.isDead = false;
-    this.r = 15; // middle to point
+    this.r = 20; // middle to point
     this.position = {
       x,
       y
@@ -44,13 +44,13 @@ class Ship {
     // }
 
     // hudge performance loss
-    if (this.position.x < 20 || this.position.x > WIDTH - 20) {
+    if (this.position.x < this.r+5 || this.position.x > WIDTH - (this.r+5)) {
       this.position.x = Math.min(
         Math.max(parseInt(this.position.x), (this.r * 4) / 3),
         WIDTH - (this.r * 4) / 3
       );
     }
-    if (this.position.y < 20 || this.position.y > HEIGHT - 20) {
+    if (this.position.y < this.r+5 || this.position.y > HEIGHT - (this.r+5)) {
       this.position.y = Math.min(
         Math.max(parseInt(this.position.y), (this.r * 4) / 3),
         HEIGHT - (this.r * 4) / 3
@@ -113,7 +113,7 @@ class Ship {
     } else if (this.rotatingL) {
       this.rotation -= ((this.turnSpeed / 180) * Math.PI) / FPS;
     } else {
-      this.rotation -= (FRICTION * this.rotation) / FPS;
+      this.rotation -= (100 * this.rotation) / FPS;
     }
     this.angle += this.rotation;
     this.corners.x1 = this.position.x + (4 / 3) * this.r * Math.cos(this.angle);
