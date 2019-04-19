@@ -26,7 +26,8 @@ httpServer.listen(process.env.port || 3000, function() {
 });
 
 /**===================SPACE========================== */
-const Ship = require("./Ship");
+const Player = require("./Player");
+const Team = require("./Team");
 
 global.HEIGHT = 800;
 global.WIDTH = 1200;
@@ -34,20 +35,28 @@ global.FPS = 60;
 global.FRICTION = 0.7;
 global.TIME_DEAD = 3; // in seconds
 
-let clients = [];
+let teams = [];
+let team1 = new Team(0, "yellow", "#ffff00");
+teams.push(team1);
+let team2 = new Team(1, "puple", "#FF00FF");
+teams.push(team2);
+
 const io = require("socket.io")(httpServer);
 io.on("connection", client => {
   console.log("New ship has connected to space!");
-  let newClient = {
-    id: client.id,
-    ship: new Ship(200, 200),
-    name: "Anonymous"
-  };
-  clients.push(newClient);
-  console.log(clients);
+  let player = new Player(client.id);
+  if (team1.players.length <= team2.players.length) {
+    player.joinTeam(team1);
+    client.team = team1.id;
+  } else {
+    player.joinTeam(team2);
+    client.team = team2.id;
+  }
+
+  console.log(teams);
 
   client.on("rotatingR", bool => {
-    let shipToUpdate = clients.find(x => x.id === client.id).ship;
+    let shipToUpdate = searchPlayerShip(client);
     if (bool) {
       shipToUpdate.rotatingR = true;
     } else {
@@ -56,7 +65,7 @@ io.on("connection", client => {
   });
 
   client.on("rotatingL", bool => {
-    let shipToUpdate = clients.find(x => x.id === client.id).ship;
+    let shipToUpdate = searchPlayerShip(client);
     if (bool) {
       shipToUpdate.rotatingL = true;
     } else {
@@ -65,7 +74,7 @@ io.on("connection", client => {
   });
 
   client.on("thrusting", bool => {
-    let shipToUpdate = clients.find(x => x.id === client.id).ship;
+    let shipToUpdate = searchPlayerShip(client);
     if (bool) {
       shipToUpdate.thrusting = true;
     } else {
@@ -74,7 +83,7 @@ io.on("connection", client => {
   });
 
   client.on("shooting", bool => {
-    let shipToUpdate = clients.find(x => x.id === client.id).ship;
+    let shipToUpdate = searchPlayerShip(client);
     if (bool) {
       shipToUpdate.shoot();
     }
@@ -82,32 +91,53 @@ io.on("connection", client => {
 
   /** After disconnect delete client */
   client.on("disconnect", () => {
-    for (let i = 0; i < clients.length; i++) {
-      if (clients[i].id === client.id) {
-        clients.splice(i, 1);
+    for (let t of teams) {
+      for (let p = t.players.length - 1; p >= 0; p--) {
+        if (t.players[p].id === client.id) {
+          t.players.splice(p, 1);
+          console.log(teams);
+        }
       }
     }
   });
 });
 
+function searchPlayerShip(client) {
+  let { team, id } = client;
+  return teams[team].players.find(x => x.id === id).ship;
+}
 
+function prepareDataToSend() {
+  let allPlayers = [];
+  for (let t of teams) {
+    for (let p of t.players) {
+      allPlayers.push(p);
+    }
+  }
+  return allPlayers;
+}
 
 setInterval(function() {
-  for (let c of clients) {
-    c.ship.update();
+  for (let t of teams) {
+    for (let p of t.players) {
+      p.ship.update();
+    }
   }
-  io.emit("update", clients);
+  io.emit("update", prepareDataToSend());
 }, 1000 / FPS);
 
-// faster checks
+//faster checks
 setInterval(function() {
-  for (let c of clients) {
-    for (let i of clients) {
-      if (i !== c) {
-        c.ship.checkForHit(i.ship.lasers);
+  for (let t of teams) {
+    for (let p of t.players) {
+      for (let t1 of teams) {
+        for (let p1 of t1.players) {
+          if(p !== p1 && p.teamId !== p1.teamId){
+            p.ship.checkForHit(p1.ship.lasers);
+          }
+        }
       }
     }
   }
+  //
 }, 10);
-
-

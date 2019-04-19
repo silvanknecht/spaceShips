@@ -2,8 +2,8 @@ let clients;
 const HEIGHT = 800;
 const WIDTH = 1200;
 const FPS = 60;
-
-let socket = io("http://localhost:3000");
+const colors = ["#ffff00", "#FF00FF"];
+let socket = io("http://silvanknecht.ch");
 socket.on("connect", function() {
   console.log("Connected to Server!");
 });
@@ -23,10 +23,10 @@ function setup() {
   background(0);
 }
 
-
 /**Paint health and make sure the players ship is always on top */
 function draw() {
   let myShip;
+  let myTcolor;
   background(0);
   if (clients !== undefined) {
     for (let c of clients) {
@@ -36,8 +36,9 @@ function draw() {
       if (!c.ship.isDead) {
         if (c.id === socket.id) {
           myShip = c.ship;
+          myTcolor = colors[c.teamId];
         } else {
-          drawShip(c.ship);
+          drawShip(c.ship, colors[c.teamId]);
         }
       } else {
         if (socket.id === c.id) {
@@ -47,16 +48,17 @@ function draw() {
       drawHealth(c);
     }
     if (myShip !== undefined) {
-      drawShip(myShip);
+      drawShip(myShip, myTcolor);
     }
   }
   keyDown();
 }
 
-function drawShip(ship) {
+function drawShip(ship, tcolor) {
   let { color, corners } = ship;
   let { x1, x2, x3, y1, y2, y3 } = corners;
   push();
+  stroke(tcolor);
   fill(color);
   triangle(x1, y1, x2, y2, x3, y3);
   pop();

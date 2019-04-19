@@ -1,6 +1,6 @@
 class Laser {
   constructor(x1, y1, shipAngle) {
-    this.speed = 60; // Pixels per second
+    this.speed = 1200; // Pixels per second
     this.dmg = 5;
     this.length = 20;
     this.position = {
@@ -11,6 +11,18 @@ class Laser {
     };
     this.color = "rgb(255,0,0)";
     this.needsDelete = false;
+    this.unitVector = this.calcUnitVector();
+  }
+
+  calcUnitVector() {
+    let dif =
+      (this.position.x2 - this.position.x1) ** 2 +
+      (this.position.y2 - this.position.y1) ** 2;
+    let unitVector = [
+      (this.position.x2 - this.position.x1) / Math.sqrt(dif),
+      (this.position.y2 - this.position.y1) / Math.sqrt(dif)
+    ];
+    return unitVector;
   }
 
   update() {
@@ -18,16 +30,11 @@ class Laser {
     this.checkForLeftScreen();
   }
 
-
   move() {
-    let dirVec = [
-      this.position.x2 - this.position.x1,
-      this.position.y2 - this.position.y1
-    ];
-    this.position.x1 += this.speed * dirVec[0]/FPS;
-    this.position.y1 += this.speed * dirVec[1]/FPS;
-    this.position.x2 += this.speed * dirVec[0]/FPS;
-    this.position.y2 += this.speed * dirVec[1]/FPS;
+    this.position.x1 += (this.speed / FPS) * this.unitVector[0];
+    this.position.y1 += (this.speed / FPS) * this.unitVector[1];
+    this.position.x2 += (this.speed / FPS) * this.unitVector[0];
+    this.position.y2 += (this.speed / FPS) * this.unitVector[1];
   }
 
   checkForLeftScreen() {
