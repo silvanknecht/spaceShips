@@ -1,67 +1,91 @@
+const { getRandomColor } = require("./tools.js");
 const Laser = require("./Laser");
 
 class Ship {
   constructor(x, y) {
     this.name = Math.random();
+    this.color = getRandomColor();
     this.health = 100;
-    this.isDead = false;
-    this.r = 20; // middle to point
+    this.isDead = false
+    this.respawnTime = TIME_DEAD * FPS;
+    this.radius = 20; // middle to corners
     this.position = {
       x,
       y
     };
     this.corners = {
       x1: x,
-      y1: y - this.r,
-      x2: x - Math.sin((60 * Math.PI) / 180) * this.r,
-      y2: y + this.r / 2,
-      x3: x + Math.sin((60 * Math.PI) / 180) * this.r,
-      y3: y + this.r / 2
+      y1: y - this.radius,
+      x2: x - Math.sin((60 * Math.PI) / 180) * this.radius,
+      y2: y + this.radius / 2,
+      x3: x + Math.sin((60 * Math.PI) / 180) * this.radius,
+      y3: y + this.radius / 2
     };
 
-    this.angle = (90 / 180) * Math.PI;
-    this.turnSpeed = 5;
+    this.angle = (90 / 180) * Math.PI; // rad
+    this.turnSpeed = 5; // grad per second
     this.rotatingR = false;
     this.rotatingL = false;
-    this.rotation = 0;
+    this.rotation = 0; // rad per second
     this.shipThrust = 5;
     this.thrusting = false;
     this.thrust = {
-      x: 0,
-      y: 0
+      x: 0, // pixel per second
+      y: 0 // pixel per second
     };
 
     this.ammo = 100;
+    this.lasers = [];
   }
 
-  update(lasers) {
-    // lasers
-    // for (let i = this.lasers.length - 1; i >= 0; i--) {
-    //   this.lasers[i].update();
-    //   if (this.lasers[i].needsDelete) {
-    //     this.lasers.splice(i, 1);
-    //   }
-    // }
+  update() {
+    // recover from death
+    if(this.isDead){
+      this.respawnTime -=1;
+      if(this.respawnTime <= 0){
+        this.isDead  = false;
+        this.health = 100;
+      }
+    }else{
+      this.respawnTime =  TIME_DEAD * FPS;
+    }
 
-    // hudge performance loss
-    if (this.position.x < this.r+5 || this.position.x > WIDTH - (this.r+5)) {
+    // move lasers
+    for (let l of this.lasers) {
+      l.update();
+    }
+    // hudge performance loss without if statements
+    if (
+      this.position.x < this.radius + 5 ||
+      this.position.x > WIDTH - (this.radius + 5)
+    ) {
       this.position.x = Math.min(
-        Math.max(parseInt(this.position.x), (this.r * 4) / 3),
-        WIDTH - (this.r * 4) / 3
+        Math.max(parseInt(this.position.x), (this.radius * 4) / 3),
+        WIDTH - (this.radius * 4) / 3
       );
     }
-    if (this.position.y < this.r+5 || this.position.y > HEIGHT - (this.r+5)) {
+    if (
+      this.position.y < this.radius + 5 ||
+      this.position.y > HEIGHT - (this.radius + 5)
+    ) {
       this.position.y = Math.min(
-        Math.max(parseInt(this.position.y), (this.r * 4) / 3),
-        HEIGHT - (this.r * 4) / 3
+        Math.max(parseInt(this.position.y), (this.radius * 4) / 3),
+        HEIGHT - (this.radius * 4) / 3
       );
     }
-    this.checkForHit(lasers);
     this.move();
     this.turn();
   }
 
   checkForHit(lasers) {
+    //move or delete lasers
+    for (let i = this.lasers.length - 1; i >= 0; i--) {
+      if (this.lasers[i].needsDelete) {
+        this.lasers.splice(i, 1);
+      }
+    }
+
+    // check if hit triangle point collision
     let areaOrig = Math.abs(
       (this.corners.x2 - this.corners.x1) *
         (this.corners.y3 - this.corners.y1) -
@@ -82,15 +106,15 @@ class Ship {
         (this.corners.x3 - l.position.x2) * (this.corners.y1 - l.position.y2) -
           (this.corners.x1 - l.position.x2) * (this.corners.y3 - l.position.y2)
       );
-      //console.log(area1);
+
       if (area1 + area2 + area3 == areaOrig) {
         this.health -= l.dmg;
-        if(this.health <= 0){
+        if (this.health <= 0) {
           this.isDead = true;
+
         }
-        console.log("hitt!!!");
+        l.needsDelete = true;
       } else {
-        //console.log("not hit");
       }
     }
   }
@@ -116,24 +140,24 @@ class Ship {
       this.rotation -= (100 * this.rotation) / FPS;
     }
     this.angle += this.rotation;
-    this.corners.x1 = this.position.x + (4 / 3) * this.r * Math.cos(this.angle);
-    this.corners.y1 = this.position.y - (4 / 3) * this.r * Math.sin(this.angle);
+    this.corners.x1 = this.position.x + (4 / 3) * this.radius * Math.cos(this.angle);
+    this.corners.y1 = this.position.y - (4 / 3) * this.radius * Math.sin(this.angle);
     this.corners.x2 =
       this.position.x -
-      this.r * ((2 / 3) * Math.cos(this.angle) + Math.sin(this.angle));
+      this.radius * ((2 / 3) * Math.cos(this.angle) + Math.sin(this.angle));
     this.corners.y2 =
       this.position.y +
-      this.r * ((2 / 3) * Math.sin(this.angle) - Math.cos(this.angle));
+      this.radius * ((2 / 3) * Math.sin(this.angle) - Math.cos(this.angle));
     this.corners.x3 =
       this.position.x -
-      this.r * ((2 / 3) * Math.cos(this.angle) - Math.sin(this.angle));
+      this.radius * ((2 / 3) * Math.cos(this.angle) - Math.sin(this.angle));
     this.corners.y3 =
       this.position.y +
-      this.r * ((2 / 3) * Math.sin(this.angle) + Math.cos(this.angle));
+      this.radius * ((2 / 3) * Math.sin(this.angle) + Math.cos(this.angle));
   }
 
   shoot() {
-    lasers.push(new Laser(this.corners.x1, this.corners.y1, this.angle));
+    this.lasers.push(new Laser(this.corners.x1, this.corners.y1, this.angle));
   }
 }
 

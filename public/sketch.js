@@ -1,10 +1,9 @@
 let clients;
-let lasers;
 const HEIGHT = 800;
 const WIDTH = 1200;
 const FPS = 60;
 
-let socket = io("http://146.136.58.104:3000");
+let socket = io("http://localhost:3000");
 socket.on("connect", function() {
   console.log("Connected to Server!");
 });
@@ -14,8 +13,7 @@ socket.on("disconnect", function() {
 });
 
 socket.on("update", data => {
-  clients = data[0];
-  lasers = data[1];
+  clients = data;
 });
 
 function setup() {
@@ -25,29 +23,38 @@ function setup() {
   background(0);
 }
 
+
+/**Paint health and make sure the players ship is always on top */
 function draw() {
+  let myShip;
   background(0);
   if (clients !== undefined) {
     for (let c of clients) {
+      for (let l of c.ship.lasers) {
+        drawLaser(l);
+      }
       if (!c.ship.isDead) {
-        drawShip(c.color, c.ship.corners, c.ship.position, c.ship.r);
+        if (c.id === socket.id) {
+          myShip = c.ship;
+        } else {
+          drawShip(c.ship);
+        }
       } else {
         if (socket.id === c.id) {
-          alert("You got killed, reload browser for another round!");
+          console.log("You got killed");
         }
       }
-      drawHealth(c.id, c.color, c.ship.health);
+      drawHealth(c);
     }
-  }
-  if (lasers !== undefined) {
-    for (let l of lasers) {
-      drawLaser(l);
+    if (myShip !== undefined) {
+      drawShip(myShip);
     }
   }
   keyDown();
 }
 
-function drawShip(color, corners) {
+function drawShip(ship) {
+  let { color, corners } = ship;
   let { x1, x2, x3, y1, y2, y3 } = corners;
   push();
   fill(color);
@@ -65,7 +72,12 @@ function drawLaser(laser) {
   pop();
 }
 
-function drawHealth(id, color, health) {
+function drawHealth(c) {
+  let {
+    id,
+    ship: { color },
+    ship: { health }
+  } = c;
   if (id === socket.id) {
     push();
     fill(color);

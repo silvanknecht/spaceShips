@@ -32,7 +32,7 @@ global.HEIGHT = 800;
 global.WIDTH = 1200;
 global.FPS = 60;
 global.FRICTION = 0.7;
-global.lasers = [];
+global.TIME_DEAD = 3; // in seconds
 
 let clients = [];
 const io = require("socket.io")(httpServer);
@@ -41,7 +41,6 @@ io.on("connection", client => {
   let newClient = {
     id: client.id,
     ship: new Ship(200, 200),
-    color: getRandomColor(),
     name: "Anonymous"
   };
   clients.push(newClient);
@@ -81,34 +80,34 @@ io.on("connection", client => {
     }
   });
 
+  /** After disconnect delete client */
   client.on("disconnect", () => {
     for (let i = 0; i < clients.length; i++) {
       if (clients[i].id === client.id) {
         clients.splice(i, 1);
       }
     }
-    console.log(clients.length);
   });
 });
 
-function getRandomColor() {
-  var letters = "0123456789ABCDEF";
-  var color = "#";
-  for (var i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
+
 
 setInterval(function() {
   for (let c of clients) {
-    c.ship.update(lasers);
+    c.ship.update();
   }
-  for (let i = lasers.length - 1; i >= 0; i--) {
-    lasers[i].update();
-    if (lasers[i].needsDelete) {
-        lasers.splice(i, 1);
-      }
-  }
-  io.emit("update", [clients, lasers]);
+  io.emit("update", clients);
 }, 1000 / FPS);
+
+// faster checks
+setInterval(function() {
+  for (let c of clients) {
+    for (let i of clients) {
+      if (i !== c) {
+        c.ship.checkForHit(i.ship.lasers);
+      }
+    }
+  }
+}, 10);
+
+
