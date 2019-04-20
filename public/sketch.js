@@ -4,7 +4,7 @@ const HEIGHT = 800;
 const WIDTH = 1200;
 const FPS = 60;
 const colors = ["#ffff00", "#FF00FF"];
-let socket = io("http://192.168.0.10:3000");
+let socket = io("http://localhost:3000");
 socket.on("connect", function() {
   console.log("Connected to Server!");
 });
@@ -16,7 +16,6 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   clients = data.allPlayers;
   tickets = data.teamScores;
-  console.log(data);
 });
 
 socket.on("serverInfo", data => {
@@ -84,8 +83,9 @@ function drawShip(ship, tcolor) {
   // draw ship Body
   let { x1, x2, x3, y1, y2, y3 } = corners;
   push();
-  stroke(tcolor);
-  fill(color);
+  strokeWeight(2);
+  stroke(color);
+  fill(tcolor);
   triangle(x1, y1, x2, y2, x3, y3);
   pop();
 

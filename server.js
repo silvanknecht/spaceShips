@@ -35,7 +35,7 @@ global.FPS = 60;
 global.FRICTION = 0.7;
 global.TIME_DEAD = 3; // in seconds
 
-const MAX_PLAYERS = 2;
+const MAX_PLAYERS = 5;
 
 let teams = [];
 let team1 = new Team(0, "yellow", "#ffff00");

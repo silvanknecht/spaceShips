@@ -63,3 +63,10 @@ typings/
 
 #Others
 configuration/
+
+
+#openode
+.openode
+docker-compose.yml
+Dockerfile
+
