@@ -3,7 +3,7 @@ const HEIGHT = 800;
 const WIDTH = 1200;
 const FPS = 60;
 const colors = ["#ffff00", "#FF00FF"];
-let socket = io("http://silvanknecht.ch");
+let socket = io("http://192.168.0.10:3000");
 socket.on("connect", function() {
   console.log("Connected to Server!");
 });
@@ -55,12 +55,27 @@ function draw() {
 }
 
 function drawShip(ship, tcolor) {
-  let { color, corners } = ship;
+  let {
+    size,
+    color,
+    corners,
+    health,
+    position: { x },
+    position: { y }
+  } = ship;
   let { x1, x2, x3, y1, y2, y3 } = corners;
   push();
   stroke(tcolor);
   fill(color);
   triangle(x1, y1, x2, y2, x3, y3);
+  pop();
+
+  // draw Ship health
+  let healthDraw = map(health, 0, 100, 0, 30);
+  console.log(healthDraw);
+  push();
+  fill("#FF0000");
+  rect(x - (healthDraw / 2), y - size - 15, healthDraw, 2.5 );
   pop();
 }
 

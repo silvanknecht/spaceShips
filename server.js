@@ -140,4 +140,4 @@ setInterval(function() {
     }
   }
   //
-}, 10);
+}, 1);

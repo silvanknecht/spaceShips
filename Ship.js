@@ -84,26 +84,35 @@ class Ship {
     );
 
     for (let l of lasers) {
-      let area1 = Math.abs(
-        (this.corners.x1 - l.position.x2) * (this.corners.y2 - l.position.y2) -
-          (this.corners.x2 - l.position.x2) * (this.corners.y1 - l.position.y2)
-      );
-      let area2 = Math.abs(
-        (this.corners.x2 - l.position.x2) * (this.corners.y3 - l.position.y2) -
-          (this.corners.x3 - l.position.x2) * (this.corners.y2 - l.position.y2)
-      );
-      let area3 = Math.abs(
-        (this.corners.x3 - l.position.x2) * (this.corners.y1 - l.position.y2) -
-          (this.corners.x1 - l.position.x2) * (this.corners.y3 - l.position.y2)
-      );
+      for (let p = 0; p <= l.length; p++) {
+        let pointToTest = {
+          x: l.position.x1 + p * l.unitVector[0],
+          y: l.position.y1 + p * l.unitVector[1]
+        };
 
-      if (area1 + area2 + area3 == areaOrig) {
-        this.health -= l.dmg;
-        if (this.health <= 0) {
-          this.isDead = true;
+        let area1 = Math.abs(
+          (this.corners.x1 - pointToTest.x) * (this.corners.y2 - pointToTest.y) -
+            (this.corners.x2 - pointToTest.x) * (this.corners.y1 - pointToTest.y)
+        );
+        let area2 = Math.abs(
+          (this.corners.x2 - pointToTest.x) * (this.corners.y3 - pointToTest.y) -
+            (this.corners.x3 - pointToTest.x) * (this.corners.y2 - pointToTest.y)
+        );
+        let area3 = Math.abs(
+          (this.corners.x3 - pointToTest.x) * (this.corners.y1 - pointToTest.y) -
+            (this.corners.x1 - pointToTest.x) * (this.corners.y3 - pointToTest.y)
+        );
+
+        if (area1 + area2 + area3 == areaOrig) {
+          this.health -= l.dmg;
+          if (this.health <= 0) {
+            this.isDead = true;
+          }
+          l.needsDelete = true;
+          break;
+        } else {
+          //console.log("not hit");
         }
-        l.needsDelete = true;
-      } else {
       }
     }
   }
