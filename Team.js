@@ -4,6 +4,11 @@ class Team {
     this.name = name;
     this.color = color;
     this.players = [];
+    this.tickets = 1;
+  }
+
+  restore(){
+    this.tickets = 1;
   }
 }
 

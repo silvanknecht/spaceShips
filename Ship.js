@@ -2,21 +2,16 @@ const { getRandomColor } = require("./tools.js");
 const Laser = require("./Laser");
 
 class Ship {
-  constructor(x, y) {
+  constructor(teamId) {
     if (new.target === Ship) {
       throw new TypeError("Cannot construct Abstract instances directly");
     }
     this.name = Math.random();
     this.color = getRandomColor();
     this.health = 100;
-    this.isDead = false;
-    this.respawnTime = TIME_DEAD * FPS;
     this.size = 18; // middle to corners
-    this.position = {
-      x,
-      y
-    };
-    this.angle = (90 / 180) * Math.PI; // rad
+    this.position = this.giveTeamPosition(teamId);
+    this.angle = this.gitveTeamAngle(teamId); // rad
     this.turnSpeed = 90; // grad per second
     this.rotatingR = false;
     this.rotatingL = false;
@@ -32,16 +27,6 @@ class Ship {
   }
 
   update() {
-    // recover from death
-    if (this.isDead) {
-      this.respawnTime -= 1;
-      if (this.respawnTime <= 0) {
-        this.isDead = false;
-        this.health = 100;
-      }
-    } else {
-      this.respawnTime = TIME_DEAD * FPS;
-    }
 
     // move lasers
     for (let l of this.lasers) {
@@ -71,6 +56,7 @@ class Ship {
     this.deleteLasers();
   }
 
+  // returns true if dead
   checkForHit(lasers) {
     //delete lasers with needsDelete = true;
     this.deleteLasers();
@@ -91,30 +77,40 @@ class Ship {
         };
 
         let area1 = Math.abs(
-          (this.corners.x1 - pointToTest.x) * (this.corners.y2 - pointToTest.y) -
-            (this.corners.x2 - pointToTest.x) * (this.corners.y1 - pointToTest.y)
+          (this.corners.x1 - pointToTest.x) *
+            (this.corners.y2 - pointToTest.y) -
+            (this.corners.x2 - pointToTest.x) *
+              (this.corners.y1 - pointToTest.y)
         );
         let area2 = Math.abs(
-          (this.corners.x2 - pointToTest.x) * (this.corners.y3 - pointToTest.y) -
-            (this.corners.x3 - pointToTest.x) * (this.corners.y2 - pointToTest.y)
+          (this.corners.x2 - pointToTest.x) *
+            (this.corners.y3 - pointToTest.y) -
+            (this.corners.x3 - pointToTest.x) *
+              (this.corners.y2 - pointToTest.y)
         );
         let area3 = Math.abs(
-          (this.corners.x3 - pointToTest.x) * (this.corners.y1 - pointToTest.y) -
-            (this.corners.x1 - pointToTest.x) * (this.corners.y3 - pointToTest.y)
+          (this.corners.x3 - pointToTest.x) *
+            (this.corners.y1 - pointToTest.y) -
+            (this.corners.x1 - pointToTest.x) *
+              (this.corners.y3 - pointToTest.y)
         );
 
-        if (area1 + area2 + area3 == areaOrig) {
+        if (area1 + area2 + area3 === areaOrig) {
           this.health -= l.dmg;
           if (this.health <= 0) {
             this.isDead = true;
+            return true;
+
           }
           l.needsDelete = true;
           break;
+
         } else {
           //console.log("not hit");
         }
       }
     }
+    return false;
   }
 
   move() {
@@ -163,6 +159,34 @@ class Ship {
       if (this.lasers[i].needsDelete) {
         this.lasers.splice(i, 1);
       }
+    }
+  }
+
+  giveTeamPosition(teamId) {
+    let x;
+    let y = Math.random() * (HEIGHT - 25 - 25) + 25;
+
+    // depending on what team the player is spawn on that side
+    switch (teamId) {
+      case 0:
+        x = Math.random() * (150 - 25) + 25;
+
+        break;
+      case 1:
+        x = Math.random() * (WIDTH - 25 - (WIDTH - 150)) + (WIDTH - 150);
+        break;
+    }
+    return { x, y };
+  }
+
+  gitveTeamAngle(teamId) {
+    switch (teamId) {
+      case 0:
+        return (1 / 180) * Math.PI;
+        break;
+      case 1:
+        return (180 / 180) * Math.PI;
+        break;
     }
   }
 }

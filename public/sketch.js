@@ -1,4 +1,5 @@
 let clients;
+let tickets;
 const HEIGHT = 800;
 const WIDTH = 1200;
 const FPS = 60;
@@ -13,7 +14,19 @@ socket.on("disconnect", function() {
 });
 
 socket.on("update", data => {
-  clients = data;
+  clients = data.allPlayers;
+  tickets = data.teamScores;
+  console.log(data);
+});
+
+socket.on("serverInfo", data => {
+  if (data === "serverFull") {
+    alert("Server already full, please try again later!");
+  }
+});
+
+socket.on("gameEnd", data => {
+  alert("Team: " + data + " won the game! Reload Browser for a new game!");
 });
 
 function setup() {
@@ -30,28 +43,32 @@ function draw() {
   background(0);
   if (clients !== undefined) {
     for (let c of clients) {
-      for (let l of c.ship.lasers) {
-        drawLaser(l);
-      }
-      if (!c.ship.isDead) {
+      if (!c.isDead) {
+        for (let l of c.ship.lasers) {
+          drawLaser(l);
+        }
+
         if (c.id === socket.id) {
           myShip = c.ship;
           myTcolor = colors[c.teamId];
         } else {
           drawShip(c.ship, colors[c.teamId]);
         }
+        drawHealth(c);
       } else {
         if (socket.id === c.id) {
           console.log("You got killed");
         }
       }
-      drawHealth(c);
     }
     if (myShip !== undefined) {
       drawShip(myShip, myTcolor);
     }
   }
   keyDown();
+  if (tickets !== undefined) {
+    drawTickets();
+  }
 }
 
 function drawShip(ship, tcolor) {
@@ -63,6 +80,8 @@ function drawShip(ship, tcolor) {
     position: { x },
     position: { y }
   } = ship;
+
+  // draw ship Body
   let { x1, x2, x3, y1, y2, y3 } = corners;
   push();
   stroke(tcolor);
@@ -72,10 +91,9 @@ function drawShip(ship, tcolor) {
 
   // draw Ship health
   let healthDraw = map(health, 0, 100, 0, 30);
-  console.log(healthDraw);
   push();
   fill("#FF0000");
-  rect(x - (healthDraw / 2), y - size - 15, healthDraw, 2.5 );
+  rect(x - healthDraw / 2, y - size - 15, healthDraw, 2.5);
   pop();
 }
 
@@ -101,6 +119,18 @@ function drawHealth(c) {
     textSize(16);
     text("Your health: " + health, WIDTH - 200, HEIGHT - 20);
     pop();
+  }
+}
+
+function drawTickets() {
+  let x = 10;
+  for (let [i, t] of tickets.entries()) {
+    push();
+    fill(colors[i]);
+    textSize(16);
+    text("Tickets " + t, x, 20);
+    pop();
+    x = WIDTH - 100;
   }
 }
 
