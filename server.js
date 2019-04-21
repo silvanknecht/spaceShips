@@ -47,6 +47,7 @@ const io = require("socket.io")(httpServer);
 io.on("connection", client => {
   console.log("New ship has connected to space!");
   let player = new Player(client.id);
+  /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
   if (
     team1.players.length <= team2.players.length &&
     team1.players.length < MAX_PLAYERS
@@ -123,13 +124,7 @@ function searchPlayerShip(client) {
 }
 
 function prepareDataToSend() {
-  let allPlayers = [];
-  for (let t of teams) {
-    for (let p of t.players) {
-      allPlayers.push(p);
-    }
-  }
-  return { allPlayers, teamScores: [team1.tickets, team2.tickets] };
+  return { teams, teamScores: [team1.tickets, team2.tickets] };
 }
 
 setInterval(function() {
@@ -142,7 +137,7 @@ setInterval(function() {
         p.ship = undefined;
         p.respawnTime -= 1;
         if (p.respawnTime <= 0) {
-          p.spawnShip();
+          p.spawnShip(t.id);
         }
       }
     }
@@ -151,6 +146,7 @@ setInterval(function() {
 }, 1000 / FPS);
 
 //faster checks
+/** check all ships against each other */
 setInterval(function() {
   for (let t of teams) {
     for (let p of t.players) {
@@ -158,7 +154,7 @@ setInterval(function() {
         for (let p1 of t1.players) {
           if (
             p !== p1 &&
-            p.teamId !== p1.teamId &&
+            t.id !== t1.id &&
             p1.isDead !== true &&
             p.isDead !== true
           ) {

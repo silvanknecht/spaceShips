@@ -1,16 +1,16 @@
 const Ship = require('./Ship');
 
 class Fighter extends Ship{
-    constructor(x,y){
-        super(x,y);
+    constructor(teamId){
+        super(teamId);
         this.type = "Triangle";
         this.corners = {
-            x1: x,
-            y1: y - this.size,
-            x2: x - Math.sin((60 * Math.PI) / 180) * this.size,
-            y2: y + this.size / 2,
-            x3: x + Math.sin((60 * Math.PI) / 180) * this.size,
-            y3: y + this.size / 2
+            x1: this.x,
+            y1: this.y - this.size,
+            x2: this.x - Math.sin((60 * Math.PI) / 180) * this.size,
+            y2: this.y + this.size / 2,
+            x3: this.x + Math.sin((60 * Math.PI) / 180) * this.size,
+            y3: this.y + this.size / 2
           };
     }
 }

@@ -1,9 +1,8 @@
-let clients;
-let tickets;
-const HEIGHT = 800;
+let teams;
+const SCOREBOARD_HIGHT = 40;
+const HEIGHT = 800 + SCOREBOARD_HIGHT;
 const WIDTH = 1200;
 const FPS = 60;
-const colors = ["#ffff00", "#FF00FF"];
 let socket = io("http://localhost:3000");
 socket.on("connect", function() {
   console.log("Connected to Server!");
@@ -14,8 +13,7 @@ socket.on("disconnect", function() {
 });
 
 socket.on("update", data => {
-  clients = data.allPlayers;
-  tickets = data.teamScores;
+  teams = data.teams;
 });
 
 socket.on("serverInfo", data => {
@@ -27,12 +25,16 @@ socket.on("serverInfo", data => {
 socket.on("gameEnd", data => {
   alert("Team: " + data + " won the game! Reload Browser for a new game!");
 });
-
+let stars = [];
+const STARS = 500;
 function setup() {
   frameRate(FPS);
   angleMode(DEGREES);
   createCanvas(WIDTH, HEIGHT);
   background(0);
+  for (let i = 0; i < STARS; i++) {
+    stars.push(new Star());
+  }
 }
 
 /**Paint health and make sure the players ship is always on top */
@@ -40,37 +42,52 @@ function draw() {
   let myShip;
   let myTcolor;
   background(0);
-  if (clients !== undefined) {
-    for (let c of clients) {
-      if (!c.isDead) {
-        for (let l of c.ship.lasers) {
-          drawLaser(l);
+
+  fill("#505050");
+  rect(0, 0, WIDTH, SCOREBOARD_HIGHT);
+
+  if (teams !== undefined) {
+    for (let t of teams) {
+      if (t.players.length > 0) {
+        for (let p of t.players) {
+          if (!p.isDead) {
+            for (let l of p.ship.lasers) {
+              drawLaser(l);
+            }
+
+            if (p.id === socket.id) {
+              myShip = p.ship;
+              myTcolor = t.color;
+            } else {
+              drawShip(p.ship, t.color);
+            }
+
+            drawHealth(p);
+          } else {
+            if (socket.id === p.id) {
+              console.log("You got killed");
+            }
+          }
         }
 
-        if (c.id === socket.id) {
-          myShip = c.ship;
-          myTcolor = colors[c.teamId];
-        } else {
-          drawShip(c.ship, colors[c.teamId]);
-        }
-        drawHealth(c);
-      } else {
-        if (socket.id === c.id) {
-          console.log("You got killed");
+        if (myShip !== undefined) {
+          drawShip(myShip, myTcolor);
         }
       }
     }
-    if (myShip !== undefined) {
-      drawShip(myShip, myTcolor);
-    }
-  }
-  keyDown();
-  if (tickets !== undefined) {
+    keyDown();
     drawTickets();
+  }
+
+  /** Background */
+  for (let i = 0; i < STARS; i++) {
+    stars[i].update();
   }
 }
 
 function drawShip(ship, tcolor) {
+  push();
+  translate(0, SCOREBOARD_HIGHT);
   let {
     size,
     color,
@@ -95,9 +112,12 @@ function drawShip(ship, tcolor) {
   fill("#FF0000");
   rect(x - healthDraw / 2, y - size - 15, healthDraw, 2.5);
   pop();
+  pop();
 }
 
 function drawLaser(laser) {
+  push();
+  translate(0, SCOREBOARD_HIGHT);
   let { color } = laser;
   let { x1, x2, y1, y2 } = laser.position;
   push();
@@ -105,9 +125,12 @@ function drawLaser(laser) {
   stroke(color);
   line(x1, y1, x2, y2);
   pop();
+  pop();
 }
 
 function drawHealth(c) {
+  push();
+  translate(0, SCOREBOARD_HIGHT);
   let {
     id,
     ship: { color },
@@ -117,18 +140,19 @@ function drawHealth(c) {
     push();
     fill(color);
     textSize(16);
-    text("Your health: " + health, WIDTH - 200, HEIGHT - 20);
+    text("Your health: " + health, WIDTH - 200, HEIGHT - 20 - SCOREBOARD_HIGHT);
     pop();
   }
+  pop();
 }
 
 function drawTickets() {
   let x = 10;
-  for (let [i, t] of tickets.entries()) {
+  for (let t of teams) {
     push();
-    fill(colors[i]);
+    fill(t.color);
     textSize(16);
-    text("Tickets " + t, x, 20);
+    text("Tickets " + t.tickets, x, 20);
     pop();
     x = WIDTH - 100;
   }

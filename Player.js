@@ -3,7 +3,6 @@ const Fighter = require("./Fighter");
 class Player {
   constructor(id) {
     this.id = id;
-    this.teamId; // without this id, the client doesn't know which color to put on as Team color...
     this.ship;
     this.name = "Anonymous";
     this.isDead = false;
@@ -12,8 +11,7 @@ class Player {
 
   joinTeam(team) {
     team.players.push(this);
-    this.teamId = team.id;
-    this.spawnShip();
+    this.spawnShip(team.id);
   }
   leaveTeam(team) {
     for (let i = team.players.length - 1; i >= 0; i--) {
@@ -24,8 +22,8 @@ class Player {
     }
   }
 
-  spawnShip() {
-    this.ship = new Fighter(this.teamId);
+  spawnShip(teamId) {
+    this.ship = new Fighter(teamId);
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
   }
