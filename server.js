@@ -26,11 +26,11 @@ httpServer.listen(process.env.port || 3000, function() {
 });
 
 /**===================SPACE========================== */
-const Player = require("./Player");
-const Team = require("./Team");
+const Player = require("./Models/Player/Player");
+const Team = require("./Models/Team/Team");
 
-global.HEIGHT = 800;
-global.WIDTH = 1200;
+global.HEIGHT = 1060;
+global.WIDTH = 1920;
 global.FPS = 60;
 global.FRICTION = 0.7;
 global.TIME_DEAD = 3; // in seconds

@@ -1,5 +1,5 @@
-const { getRandomColor } = require("./tools.js");
-const Laser = require("./Laser");
+const { getRandomColor } = require("../../tools.js");
+const Laser = require("../Laser/Laser");
 
 class Ship {
   constructor(teamId) {

@@ -1,8 +1,36 @@
 let teams;
+let canvas;
+
 const SCOREBOARD_HIGHT = 40;
-const HEIGHT = 800 + SCOREBOARD_HIGHT;
-const WIDTH = 1200;
+const HEIGHT = 1060 + SCOREBOARD_HIGHT;
+const WIDTH = 1920;
 const FPS = 60;
+
+/** Background */
+let stars = [];
+const STARS = 1000;
+
+window.onload = function() {
+  canvas = document.getElementsByTagName("canvas")[0];
+  resizeCanv();
+};
+window.onresize = function() {
+  resizeCanv();
+};
+
+function resizeCanv() {
+  var width =
+    window.innerWidth ||
+    document.documentElement.clientWidth ||
+    document.body.clientWidth;
+
+  var height =
+    window.innerHeight ||
+    document.documentElement.clientHeight ||
+    document.body.clientHeight;
+  canvas.style.width = width - 20 + "px";
+  canvas.style.height = height - 27 + "px";
+}
 let socket = io("http://localhost:3000");
 socket.on("connect", function() {
   console.log("Connected to Server!");
@@ -25,8 +53,7 @@ socket.on("serverInfo", data => {
 socket.on("gameEnd", data => {
   alert("Team: " + data + " won the game! Reload Browser for a new game!");
 });
-let stars = [];
-const STARS = 500;
+
 function setup() {
   frameRate(FPS);
   angleMode(DEGREES);

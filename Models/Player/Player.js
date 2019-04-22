@@ -1,4 +1,4 @@
-const Fighter = require("./Fighter");
+const Fighter = require("../Ship/Fighter");
 
 class Player {
   constructor(id) {

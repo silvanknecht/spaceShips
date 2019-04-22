@@ -4,12 +4,19 @@ class Star {
     this.y =
       Math.random() * (HEIGHT - SCOREBOARD_HIGHT) +
       SCOREBOARD_HIGHT;
+    this.noneBlinkSize = Math.random() * (1.5 - 0.5) + 0.5;
+    this.d = this.noneBlinkSize;
+    this.blinkSize = this.noneBlinkSize + 10;
+    this.timeTillBlink = (Math.random() * (STARS - 5) + 5) *FPS;
 
-    this.d = Math.random() * (1.5 - 0.5) + 0.5;
   }
 
   update() {
     this.draw();
+    this.blink();
+
+
+
   }
 
   draw() {
@@ -17,4 +24,17 @@ class Star {
     fill("#FFF");
     ellipse(this.x, this.y, this.d / 2);
   }
+
+  blink(){
+
+    if(this.timeTillBlink <= 0){
+        this.d = this.blinkSize;
+      this.timeTillBlink = (Math.random() * (STARS - 5) + 5) *FPS;
+    }else{
+      this.d = this.noneBlinkSize;
+      this.timeTillBlink--;
+    }
+  }
+
+
 }
