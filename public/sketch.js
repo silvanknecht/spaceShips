@@ -34,12 +34,16 @@ function resizeCanv() {
   canvas.style.width = width - 20 + "px";
   canvas.style.height = height - 27 + "px";
 }
-let socket = io("http://localhost:3000");
+let socket = io("http://localhost:3000", {
+  transports: ["websocket"],
+  upgrade: false
+});
 socket.on("connect", function() {
   console.log("Connected to Server!");
 });
-socket.on("event", function(data) {});
+
 socket.on("disconnect", function() {
+  socket.removeAllListeners();
   socket.close();
 });
 
@@ -200,7 +204,7 @@ function drawTime() {
   push();
   fill("#F55AC");
   textSize(16);
-  text(time, width/2, 20);
+  text(time, width / 2, 20);
   pop();
 }
 
