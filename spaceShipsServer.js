@@ -3,6 +3,7 @@ const Team = require("./Models/Team/Team");
 
 global.HEIGHT = 1060;
 global.WIDTH = 1920;
+global.SCOREBOARD_HEIGHT = 40;
 global.FPS = 60;
 global.FRICTION = 0.7;
 
@@ -100,7 +101,7 @@ module.exports = function(io) {
   }
 
   function prepareDataToSend() {
-    return { teams, teamScores: [team1.tickets, team2.tickets] };
+    return { teams, items };
   }
 
   setInterval(function() {
@@ -121,10 +122,8 @@ module.exports = function(io) {
     io.emit("update", prepareDataToSend());
   }, 1000 / FPS);
 
+  /** GAMETIME */
   setInterval(() => {
-    gameTime();
-  }, 1000);
-  function gameTime() {
     if (currentTime > 0) {
       currentTime--;
       io.emit("serverTime", currentTime);
@@ -132,10 +131,24 @@ module.exports = function(io) {
       gameFinished();
       currentTime = GAMELENGTH;
     }
-  }
+  }, 1000);
+
+  /** ITEMS  */
+
+  const Shield = require("./Models/Item/Shield");
+  global.items = [];
+
+  setInterval(() => {
+    if (items.length < MAX_PLAYERS) {
+      let newItem = new Shield();
+      items.push(newItem);
+    }
+  }, 20000);
 
   //faster checks
-  /** check all ships against each other */
+  /** check all ships against each other
+   * - lasers
+   */
   setInterval(function() {
     for (let t of teams) {
       for (let p of t.players) {
@@ -162,6 +175,7 @@ module.exports = function(io) {
     //
   }, 1);
 
+  /* Defines what happens when the game ended*/
   function gameFinished(t1) {
     if (t1) {
       io.emit("gameEnd", "Team: " + t1.name + " won the game!");

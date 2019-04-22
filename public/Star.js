@@ -4,7 +4,7 @@ class Star {
     this.y =
       Math.random() * (HEIGHT - SCOREBOARD_HIGHT) +
       SCOREBOARD_HIGHT;
-    this.noneBlinkSize = Math.random() * (1.5 - 0.5) + 0.5;
+    this.noneBlinkSize = Math.random() * (3.5 - 0.5) + 0.5;
     this.d = this.noneBlinkSize;
     this.blinkSize = this.noneBlinkSize + 10;
     this.timeTillBlink = (Math.random() * (STARS - 5) + 5) *FPS;

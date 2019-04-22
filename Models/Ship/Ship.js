@@ -1,5 +1,6 @@
 const { getRandomColor } = require("../../tools.js");
 const Laser = require("../Laser/Laser");
+const collide = require("triangle-circle-collision");
 
 class Ship {
   constructor(teamId) {
@@ -15,7 +16,6 @@ class Ship {
     this.turnSpeed = 90; // grad per second
     this.rotatingR = false;
     this.rotatingL = false;
-    this.rotation = 0; // rad per second
     this.shipThrust = 5;
     this.thrusting = false;
     this.thrust = {
@@ -24,10 +24,10 @@ class Ship {
     };
     this.ammo = 100;
     this.lasers = [];
+    this.shield = { hitpoints: 0 };
   }
 
   update() {
-
     // move lasers
     for (let l of this.lasers) {
       l.update();
@@ -54,6 +54,7 @@ class Ship {
     this.move();
     this.turn();
     this.deleteLasers();
+    this.pickUpItem();
   }
 
   // returns true if dead
@@ -96,15 +97,22 @@ class Ship {
         );
 
         if (area1 + area2 + area3 === areaOrig) {
-          this.health -= l.dmg;
+          if (this.shield.hitpoints > 0) {
+            this.shield.hitpoints -= l.dmg;
+            if (this.shield.hitpoints < 0) {
+              this.health -= this.shield.hitpoints;
+              this.shield = { hitpoints: 0 };
+            }
+          } else {
+            this.health -= l.dmg;
+          }
+
           if (this.health <= 0) {
             this.isDead = true;
             return true;
-
           }
           l.needsDelete = true;
           break;
-
         } else {
           //console.log("not hit");
         }
@@ -187,6 +195,30 @@ class Ship {
       case 1:
         return (180 / 180) * Math.PI;
         break;
+    }
+  }
+
+  pickUpItem() {
+    if (items !== 0) {
+      for (let [i, it] of items.entries()) {
+        let collided = collide(
+          [
+            [this.corners.x1, this.corners.y1],
+            [this.corners.x2, this.corners.y2],
+            [this.corners.x3, this.corners.y3]
+          ],
+          [it.position.x, it.position.y],
+          it.d / 2
+        );
+        if (collided) {
+          switch (it.name) {
+            case "shield":
+              this.shield = it;
+              it.pickedUp();
+              break;
+          }
+        }
+      }
     }
   }
 }

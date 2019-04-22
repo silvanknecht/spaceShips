@@ -1,4 +1,5 @@
 let teams;
+let items;
 let time;
 let canvas;
 let width;
@@ -49,6 +50,7 @@ socket.on("disconnect", function() {
 
 socket.on("update", data => {
   teams = data.teams;
+  items = data.items;
 });
 
 socket.on("serverInfo", data => {
@@ -80,11 +82,19 @@ function draw() {
   let myShip;
   let myTcolor;
   background(0);
-
+  /** Scorebaord */
   fill("#505050");
   rect(0, 0, WIDTH, SCOREBOARD_HIGHT);
 
+  /** Background */
+  for (let i = 0; i < STARS; i++) {
+    stars[i].update();
+  }
+
   if (teams !== undefined) {
+    if (items !== undefined) {
+      drawItems();
+    }
     for (let t of teams) {
       if (t.players.length > 0) {
         for (let p of t.players) {
@@ -119,11 +129,6 @@ function draw() {
       drawTime();
     }
   }
-
-  /** Background */
-  for (let i = 0; i < STARS; i++) {
-    stars[i].update();
-  }
 }
 
 function drawShip(ship, tcolor) {
@@ -135,7 +140,8 @@ function drawShip(ship, tcolor) {
     corners,
     health,
     position: { x },
-    position: { y }
+    position: { y },
+    shield: { hitpoints, maxHitpoints }
   } = ship;
 
   // draw ship Body
@@ -146,6 +152,15 @@ function drawShip(ship, tcolor) {
   fill(tcolor);
   triangle(x1, y1, x2, y2, x3, y3);
   pop();
+
+  // draw shield
+  if (hitpoints > 0) {
+    let shieldDensity = map(hitpoints, 0, maxHitpoints, 0, 180);
+    push();
+    fill(0, 0, 255, shieldDensity);
+    ellipse(x, y, size * 3);
+    pop();
+  }
 
   // draw Ship health
   let healthDraw = map(health, 0, 100, 0, 30);
@@ -200,12 +215,20 @@ function drawTickets() {
 }
 
 function drawTime() {
-  console.log(time);
   push();
   fill("#F55AC");
   textSize(16);
   text(time, width / 2, 20);
   pop();
+}
+
+function drawItems() {
+  for (let i of items) {
+    push();
+    fill("#0000FF");
+    ellipse(i.position.x, i.position.y, i.d / 2);
+    pop();
+  }
 }
 
 function keyDown() {
