@@ -1,5 +1,8 @@
 let teams;
+let time;
 let canvas;
+let width;
+let height;
 
 const SCOREBOARD_HIGHT = 40;
 const HEIGHT = 1060 + SCOREBOARD_HIGHT;
@@ -19,12 +22,12 @@ window.onresize = function() {
 };
 
 function resizeCanv() {
-  var width =
+  width =
     window.innerWidth ||
     document.documentElement.clientWidth ||
     document.body.clientWidth;
 
-  var height =
+  height =
     window.innerHeight ||
     document.documentElement.clientHeight ||
     document.body.clientHeight;
@@ -51,7 +54,11 @@ socket.on("serverInfo", data => {
 });
 
 socket.on("gameEnd", data => {
-  alert("Team: " + data + " won the game! Reload Browser for a new game!");
+  alert(data);
+});
+
+socket.on("serverTime", data => {
+  time = data;
 });
 
 function setup() {
@@ -104,6 +111,9 @@ function draw() {
     }
     keyDown();
     drawTickets();
+    if (time !== undefined) {
+      drawTime();
+    }
   }
 
   /** Background */
@@ -183,6 +193,15 @@ function drawTickets() {
     pop();
     x = WIDTH - 100;
   }
+}
+
+function drawTime() {
+  console.log(time);
+  push();
+  fill("#F55AC");
+  textSize(16);
+  text(time, width/2, 20);
+  pop();
 }
 
 function keyDown() {

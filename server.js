@@ -33,9 +33,13 @@ global.HEIGHT = 1060;
 global.WIDTH = 1920;
 global.FPS = 60;
 global.FRICTION = 0.7;
-global.TIME_DEAD = 3; // in seconds
 
+/** Game settings */
+let gameRuns = true;
 const MAX_PLAYERS = 5;
+const GAMELENGTH = 10 * 60; // in seconds
+global.TIME_DEAD = 3; // in seconds
+let currentTime = GAMELENGTH;
 
 let teams = [];
 let team1 = new Team(0, "yellow", "#ffff00");
@@ -145,6 +149,19 @@ setInterval(function() {
   io.emit("update", prepareDataToSend());
 }, 1000 / FPS);
 
+setInterval(() => {
+  gameTime();
+}, 1000);
+function gameTime() {
+  if (currentTime > 0) {
+    currentTime--;
+    io.emit("serverTime", currentTime);
+  } else {
+    gameFinished();
+    currentTime = GAMELENGTH;
+  }
+}
+
 //faster checks
 /** check all ships against each other */
 setInterval(function() {
@@ -162,7 +179,7 @@ setInterval(function() {
               t.tickets--;
               p.isDead = true;
               if (t.tickets === 0) {
-                gameFinished(t, t1);
+                gameFinished(t1);
               }
             }
           }
@@ -173,10 +190,19 @@ setInterval(function() {
   //
 }, 1);
 
-function gameFinished(t, t1) {
-  io.emit("gameEnd", t1.name);
-  t.restore();
-  t1.restore();
+function gameFinished(t1) {
+  if (t1) {
+    io.emit("gameEnd", "Team: "+t1.name+ " won the game!");
+  }else{
+    io.emit("gameEnd", "Time Run out!")
+  }
+  for (let t of teams) {
+    t.restore();
+    for (let p of t.players) {
+      p.spawnShip(t.id);
+    }
+  }
+
   // var clients = io.sockets.clients();
   // for(let c of clients){
   //   c.team = undefined;
