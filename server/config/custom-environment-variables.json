@@ -1,0 +1,17 @@
+{
+  "jwtSecret": "auth_jwtSecret",
+  "oauth": {
+    "google": {
+      "clientId": "auth_googleClientId",
+      "clientSecret": "auth_googleclientSecret"
+    },
+    "facebook": {
+      "clientId": "auth_facebookClientId",
+      "clientSecret": "auth_facebookClientSecret"
+    },
+    "github": {
+      "clientId": "auth_githubClientId",
+      "clientSecret": "auth_githubClientSecret"
+    }
+  }
+}

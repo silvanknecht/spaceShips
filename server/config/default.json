@@ -1,0 +1,18 @@
+{
+  "jwtSecret": "dev_Env",
+  "oauth": {
+    "google": {
+      "clientId": "dev_Env",
+      "clientSecret": "dev_Env"
+    },
+    "facebook": {
+      "clientId": "dev_Env",
+      "clientSecret": "dev_Env"
+    },
+    "github": {
+      "clientId": "dev_Env",
+      "clientSecret": "dev_Env"
+    }
+  },
+  "db": "mongodb://localhost/SpaceShips"
+}

@@ -1,0 +1,18 @@
+{
+  "jwtSecret": "test",
+  "oauth": {
+    "google": {
+      "clientId": "",
+      "clientSecret": ""
+    },
+    "facebook": {
+      "clientId": "",
+      "clientSecret": ""
+    },
+    "github": {
+      "clientId": "",
+      "clientSecret": ""
+    }
+  },
+  "db": "mongodb://localhost/nodejsAuthentication_test"
+}

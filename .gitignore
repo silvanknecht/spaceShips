@@ -60,6 +60,14 @@ typings/
 # next.js build output
 .next
 
+# Don't Push sensitive information
+server/conf/index.js
+
+#client
+client/node_modules
+
+#tests
+coverage/
 
 #Others
 configuration/

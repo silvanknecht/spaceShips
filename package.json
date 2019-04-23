@@ -2,9 +2,9 @@
   "name": "spaceships",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "./server/app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watchAll --verbose --env=node --runInBand --coverage"
   },
   "repository": {
     "type": "git",
@@ -22,6 +22,26 @@
     "http": "0.0.0",
     "path": "^0.12.7",
     "socket.io": "^2.2.0",
-    "triangle-circle-collision": "^1.0.4"
+    "triangle-circle-collision": "^1.0.4",
+    "async": "^2.6.1",
+    "bcryptjs": "^2.4.3",
+    "config": "^3.0.1",
+    "express-async-errors": "^3.1.1",
+    "express-promise-router": "^3.0.3",
+    "joi": "^14.3.1",
+    "jsonwebtoken": "^8.4.0",
+    "mongoose": "^5.4.9",
+    "passport": "^0.4.0",
+    "passport-facebook-token": "^3.3.0",
+    "passport-github-token": "^2.1.0",
+    "passport-google-plus-token": "^2.1.0",
+    "passport-jwt": "^4.0.0",
+    "passport-local": "^1.0.0",
+    "winston": "^3.2.1",
+    "winston-mongodb": "^5.0.0"
+  },
+  "devDependencies": {
+    "jest": "^24.5.0",
+    "supertest": "^4.0.2"
   }
 }

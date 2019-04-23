@@ -1,11 +1,24 @@
 const express = require("express");
+
+const logger = require("./middleware/logger");
+
 const app = express();
+const server = require("http").Server(app);
+
+process.env.NODE_CONFIG_DIR = "./server/config";
+require("./startup/logging")();
+require("./startup/config")();
+require("./startup/routes")(app);
+require("./startup/database")();
+
+/* Server */
+const port = process.env.PORT || 5000;
+server.listen(port, () => {
+  logger.info(`listening on port ${port}...`);
+});
+
 const path = require("path");
 const compression = require("compression");
-const httpServer = require("http").createServer(app);
-
-// middlewares
-app.use(express.json());
 app.use(
   express.urlencoded({
     extended: true
@@ -21,14 +34,12 @@ app.get("/", function(req, res) {
   console.log("hallo");
 });
 
-httpServer.listen(process.env.port || 3000, function() {
-  console.log("HTTP - Server running at Port 3000");
-});
-
 /**===================SPACE SHIPS========================== */
 
-const io = require("socket.io")(httpServer);
-require("./spaceShips/spaceShipsServer")(io);
+const io = require("socket.io")(server);
+require("../spaceShips/spaceShipsServer")(io);
+
+module.exports = server;
 
 /* Memory usage in MB*/
 // setInterval(() => {
