@@ -28,6 +28,9 @@ httpServer.listen(process.env.port || 3000, function() {
 /**===================SPACE SHIPS========================== */
 
 const io = require("socket.io")(httpServer);
-require('./spaceShipsServer')(io);
+require("./spaceShips/spaceShipsServer")(io);
 
-
+/* Memory usage in MB*/
+// setInterval(() => {
+//   console.log(process.memoryUsage().heapUsed / 1024 / 1024);
+// }, 1000);
