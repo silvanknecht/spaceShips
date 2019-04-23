@@ -17,22 +17,16 @@ server.listen(port, () => {
   logger.info(`listening on port ${port}...`);
 });
 
-const path = require("path");
 const compression = require("compression");
+const path = require("path");
 app.use(
   express.urlencoded({
     extended: true
   })
 );
-app.use(compression());
 
-app.use(express.static("public"));
 
-// index
-app.get("/", function(req, res) {
-  res.sendFile(path.join(__dirname + "/index.html"));
-  console.log("hallo");
-});
+
 
 /**===================SPACE SHIPS========================== */
 
