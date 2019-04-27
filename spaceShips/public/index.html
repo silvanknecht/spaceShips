@@ -36,6 +36,13 @@
     </style>
   </head>
   <body>
+    <script src="/global.js"></script>
+    <script>
+      if (localStorage.getItem("Authorization")) {
+        window.location.replace(url + "interface/index.html");
+      }
+    </script>
+
     <div class="container-fluid">
       <div class="container">
         <h1 class="text-center" id="title">SpaceShips</h1>
@@ -142,7 +149,7 @@
       integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
       crossorigin="anonymous"
     ></script>
-    <script src="/global.js"></script>
-    <script src="/index.js"></script>
+
+    <script src="index.js"></script>
   </body>
 </html>

@@ -52,7 +52,7 @@ function signUp() {
     } else {
       data.json().then(body => {
         localStorage.setItem("Authorization", "bearer " + body.token);
-        window.location.replace(url + "main.html");
+        window.location.replace(url + "interface/main.html");
       });
     }
   });
@@ -80,7 +80,7 @@ function signIn() {
     } else {
       data.json().then(body => {
         localStorage.setItem("Authorization", "bearer " + body.token);
-        window.location.replace(url + "main.html");
+        window.location.replace(url + "interface/index.html");
       });
     }
   });

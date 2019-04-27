@@ -54,7 +54,7 @@ userSchema.methods.generateAuthToken = function() {
       iss: "NodeJs_Authentification",
       sub: this,
       iat: new Date().getTime(),
-      exp: new Date().setDate(new Date().getDate() + 1) // current date + 1 day
+      exp: Math.floor(Date.now() / 1000) + 60 * 60 // current date + 1 hour
     },
     config.get("jwtSecret")
   );
