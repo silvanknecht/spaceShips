@@ -227,6 +227,7 @@ passport.use(
 
       // if not, handle it
       if (!user) {
+        logger.debug("no user with this email found");
         return next(null, false);
       }
 

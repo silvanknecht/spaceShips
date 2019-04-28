@@ -4,10 +4,14 @@ const Schema = mongoose.Schema;
 
 // Create a schema
 const shipSchema = new Schema({
-  // Additional validation, it's also done serverside!
   name: {
     type: String,
-    required: true
+    required: true,
+    lowercase: true
+  },
+  color: {
+    type: String,
+    default: "black"
   },
   health: {
     type: Number,
@@ -25,6 +29,7 @@ const User = mongoose.model("Ship", shipSchema); // name will be pluralized auto
 function validateShip(req, res, next) {
   const schema = {
     name: Joi.string().required(),
+    color: Joi.string(),
     health: Joi.number().required(),
     size: Joi.number().required()
   };

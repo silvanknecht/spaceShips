@@ -7,6 +7,7 @@ const config = require("config");
 const Schema = mongoose.Schema;
 
 const logger = require("../middleware/logger");
+const Ship = require("./ship");
 
 // Create a schema
 // TODO: Add other fields: lastname, firstname, birthday, etc.
@@ -41,6 +42,12 @@ const userSchema = new Schema({
     id: {
       type: String
     }
+  },
+  role: {
+    type: [String],
+    enum: ["user", "admin"],
+    required: true,
+    default: ["user"]
   }
 });
 

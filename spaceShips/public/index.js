@@ -1,5 +1,3 @@
-const localStorage = window.localStorage;
-
 let emailSignUp;
 let passwordSignUP;
 let emailSignIn;
@@ -52,7 +50,7 @@ function signUp() {
     } else {
       data.json().then(body => {
         localStorage.setItem("Authorization", "bearer " + body.token);
-        window.location.replace(url + "interface/main.html");
+        window.location.replace(url + "interface/index.html");
       });
     }
   });
@@ -73,8 +71,10 @@ function signIn() {
       password: passwordSignIn.value
     })
   }).then(data => {
-    if (data.status !== 200) {
-      data.json().then(body => {
+    if (data.status === 401) {
+      signInInfo.innerText = "Email or Password wrong!";
+    } else if (data.status !== 200) {
+      data.text().then(body => {
         signInInfo.innerText = body.message;
       });
     } else {
