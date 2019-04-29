@@ -8,6 +8,8 @@ const Schema = mongoose.Schema;
 
 const logger = require("../middleware/logger");
 const Ship = require("./ship");
+const { shipPreference } = require("./shipPreferences");
+const ShipPreference = require("./shipPreferences");
 
 // Create a schema
 // TODO: Add other fields: lastname, firstname, birthday, etc.
@@ -43,11 +45,27 @@ const userSchema = new Schema({
       type: String
     }
   },
-  role: {
+  roles: {
     type: [String],
     enum: ["user", "admin"],
     required: true,
     default: ["user"]
+  },
+  ships: {
+    type: [mongoose.Schema.Types.ObjectId],
+    required: true,
+    default: ["5cc5de13b03b9f3584348a69"],
+    ref: "Ship"
+  },
+  activeShip: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    default: "5cc5de13b03b9f3584348a69",
+    ref: "Ship"
+  },
+  shipPreferences: {
+    type: [mongoose.Schema.Types.ObjectId],
+    default: []
   }
 });
 
@@ -60,7 +78,7 @@ userSchema.methods.generateAuthToken = function() {
     {
       iss: "NodeJs_Authentification",
       sub: this,
-      iat: new Date().getTime(),
+      iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 60 * 60 // current date + 1 hour
     },
     config.get("jwtSecret")

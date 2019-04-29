@@ -1,12 +1,13 @@
 const Fighter = require("../Ship/Fighter");
 
 class Player {
-  constructor(id) {
+  constructor(id, user) {
     this.id = id;
     this.ship;
     this.name = "Anonymous";
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
+    this.user = user;
   }
 
   joinTeam(team) {
@@ -23,7 +24,11 @@ class Player {
   }
 
   spawnShip(teamId) {
-    this.ship = new Fighter(teamId);
+    switch (this.user.activeShip) {
+      case "5cc5de13b03b9f3584348a69":
+        this.ship = new Fighter(teamId);
+        break;
+    }
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
   }

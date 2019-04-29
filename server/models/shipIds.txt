@@ -1,0 +1,12 @@
+{
+    "ships": [
+        {
+            "color": "black",
+            "_id": "5cc5de13b03b9f3584348a69",
+            "name": "fighter",
+            "health": 100,
+            "size": 18,
+            "__v": 0
+        }
+    ]
+}

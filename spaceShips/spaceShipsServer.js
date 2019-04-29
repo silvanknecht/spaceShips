@@ -1,5 +1,7 @@
 const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
+const jwt = require("jsonwebtoken");
+const config = require("config");
 
 global.HEIGHT = 1060;
 global.WIDTH = 1920;
@@ -23,75 +25,81 @@ teams.push(team2);
 module.exports = function(io) {
   io.on("connection", client => {
     console.log("New ship has connected to space!");
-    let player = new Player(client.id);
+
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
-    if (
-      team1.players.length <= team2.players.length &&
-      team1.players.length < MAX_PLAYERS
-    ) {
-      player.joinTeam(team1);
-      client.team = team1.id;
-    } else if (team2.players.length < MAX_PLAYERS) {
-      player.joinTeam(team2);
-      client.team = team2.id;
-    } else {
-      client.emit("serverInfo", "serverFull");
-    }
+    client.on("registerForGame", jwtToken => {
+      let user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
+      let player = new Player(client.id, user.sub);
 
-    if (client.team !== undefined) {
-      client.on("rotatingR", bool => {
-        let shipToUpdate = searchPlayerShip(client);
-        if (shipToUpdate !== undefined) {
-          if (bool) {
-            shipToUpdate.rotatingR = true;
-          } else {
-            shipToUpdate.rotatingR = false;
-          }
-        }
-      });
 
-      client.on("rotatingL", bool => {
-        let shipToUpdate = searchPlayerShip(client);
-        if (shipToUpdate !== undefined) {
-          if (bool) {
-            shipToUpdate.rotatingL = true;
-          } else {
-            shipToUpdate.rotatingL = false;
-          }
-        }
-      });
+      if (
+        team1.players.length <= team2.players.length &&
+        team1.players.length < MAX_PLAYERS
+      ) {
+        player.joinTeam(team1);
+        client.team = team1.id;
+      } else if (team2.players.length < MAX_PLAYERS) {
+        player.joinTeam(team2);
+        client.team = team2.id;
+      } else {
+        client.emit("serverInfo", "serverFull");
+      }
 
-      client.on("thrusting", bool => {
-        let shipToUpdate = searchPlayerShip(client);
-        if (shipToUpdate !== undefined) {
-          if (bool) {
-            shipToUpdate.thrusting = true;
-          } else {
-            shipToUpdate.thrusting = false;
-          }
-        }
-      });
-
-      client.on("shooting", bool => {
-        let shipToUpdate = searchPlayerShip(client);
-        if (shipToUpdate !== undefined) {
-          if (bool) {
-            shipToUpdate.shoot();
-          }
-        }
-      });
-
-      /** After disconnect delete client */
-      client.on("disconnect", () => {
-        for (let t of teams) {
-          for (let p = t.players.length - 1; p >= 0; p--) {
-            if (t.players[p].id === client.id) {
-              t.players.splice(p, 1);
+      if (client.team !== undefined) {
+        client.on("rotatingR", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.rotatingR = true;
+            } else {
+              shipToUpdate.rotatingR = false;
             }
           }
-        }
-      });
-    }
+        });
+
+        client.on("rotatingL", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.rotatingL = true;
+            } else {
+              shipToUpdate.rotatingL = false;
+            }
+          }
+        });
+
+        client.on("thrusting", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.thrusting = true;
+            } else {
+              shipToUpdate.thrusting = false;
+            }
+          }
+        });
+
+        client.on("shooting", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.shoot();
+            }
+          }
+        });
+
+        /** After disconnect delete client */
+        client.on("disconnect", () => {
+          for (let t of teams) {
+            for (let p = t.players.length - 1; p >= 0; p--) {
+              if (t.players[p].id === client.id) {
+                t.players.splice(p, 1);
+              }
+            }
+          }
+        });
+      }
+    });
   });
 
   function searchPlayerShip(client) {

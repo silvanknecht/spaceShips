@@ -3,11 +3,13 @@ const path = require("path");
 
 const users = require("../routes/users");
 const ships = require("../routes/ships");
+const shipPreferences = require("../routes/shipPreferences");
 
 module.exports = function(app) {
   app.use(express.json());
   app.use("/api/v1/users", users);
   app.use("/api/v1/ships", ships);
+  app.use("/api/v1/shipPreferences", shipPreferences);
 
   app.use(express.static("spaceShips/public"));
   app.get("/", function(req, res) {

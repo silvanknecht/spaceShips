@@ -24,7 +24,7 @@ const shipSchema = new Schema({
 });
 
 // Create a model
-const User = mongoose.model("Ship", shipSchema); // name will be pluralized automatically for DB
+const Ship = mongoose.model("Ship", shipSchema); // name will be pluralized automatically for DB
 
 function validateShip(req, res, next) {
   const schema = {
@@ -37,5 +37,5 @@ function validateShip(req, res, next) {
 }
 
 // // Export the model
-module.exports = User;
+module.exports = Ship;
 module.exports.validateShip = validateShip;

@@ -1,6 +1,6 @@
-() => {
+(() => {
   getMe();
-};
+})();
 
 function getMe() {
   fetch(url + "api/v1/users/me", {
@@ -21,7 +21,7 @@ function getMe() {
         window.location.replace(url);
       } else {
         data.json().then(body => {
-          console.log(body);
+          me = body;
         });
       }
     })

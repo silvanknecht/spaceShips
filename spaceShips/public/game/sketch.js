@@ -41,7 +41,9 @@ let socket = io("http://localhost:5000", {
 });
 socket.on("connect", function() {
   console.log("Connected to Server!");
+  socket.emit("registerForGame", jwtToken);
 });
+
 
 socket.on("disconnect", function() {
   socket.removeAllListeners();

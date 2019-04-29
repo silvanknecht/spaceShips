@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 const User = require("../models/user");
+const ShipPreferences = require("../models/shipPreferences");
 const logger = require("../middleware/logger");
 
 module.exports = {
@@ -41,15 +42,24 @@ module.exports = {
           token
         });
       } else {
+        // add a default Ship Preference to the account for the first ship "Fighter"
+        const newShipPreference = new ShipPreferences({
+          shipId: "5cc5de13b03b9f3584348a69"
+        });
+
         const newUser = new User({
           methodes: ["local"],
           email,
           local: {
             password: password
-          }
+          },
+          shipPreferences: [newShipPreference._id]
         });
 
+        newShipPreference.userId = newUser._id;
+        await newShipPreference.save();
         await newUser.save();
+
         const token = newUser.generateAuthToken();
         res.status(200).json({
           token

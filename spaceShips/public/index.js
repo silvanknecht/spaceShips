@@ -57,7 +57,7 @@ function signUp() {
 }
 
 function signIn() {
-  fetch(url + "api/v1/users/signIn", {
+  fetch(url + "api/v1/users/signin", {
     method: "POST",
     mode: "cors",
     cache: "no-cache",
