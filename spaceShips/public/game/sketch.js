@@ -44,7 +44,6 @@ socket.on("connect", function() {
   socket.emit("registerForGame", jwtToken);
 });
 
-
 socket.on("disconnect", function() {
   socket.removeAllListeners();
   socket.close();
@@ -58,6 +57,8 @@ socket.on("update", data => {
 socket.on("serverInfo", data => {
   if (data === "serverFull") {
     alert("Server already full, please try again later!");
+  } else if (data === "existsAlready") {
+    alert("You're already in the game!");
   }
 });
 
