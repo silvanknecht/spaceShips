@@ -7,6 +7,7 @@ class Ship {
     if (new.target === Ship) {
       throw new TypeError("Cannot construct Abstract instances directly");
     }
+    this.teamId = teamId;
     this.name = Math.random();
     this.color = getRandomColor();
     this.health = 100;
@@ -22,6 +23,8 @@ class Ship {
       x: 0, // pixel per second
       y: 0 // pixel per second
     };
+    this.isDead = false;
+    this.respawnTime = TIME_DEAD * FPS;
     this.ammo = 100;
     this.lasers = [];
     this.shield = { hitpoints: 0 };
@@ -220,6 +223,27 @@ class Ship {
         }
       }
     }
+  }
+
+  restore() {
+    this.health = 100;
+    this.size = 18; // middle to corners
+    this.position = this.giveTeamPosition(this.teamId);
+    this.angle = this.gitveTeamAngle(this.teamId); // rad
+    this.turnSpeed = 90; // grad per second
+    this.rotatingR = false;
+    this.rotatingL = false;
+    this.shipThrust = 5;
+    this.thrusting = false;
+    this.thrust = {
+      x: 0, // pixel per second
+      y: 0 // pixel per second
+    };
+    this.isDead = false;
+    this.respawnTime = TIME_DEAD * FPS;
+    this.ammo = 100;
+    this.lasers = [];
+    this.shield = { hitpoints: 0 };
   }
 }
 

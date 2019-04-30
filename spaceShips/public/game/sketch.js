@@ -100,7 +100,7 @@ function draw() {
     for (let t of teams) {
       if (t.players.length > 0) {
         for (let p of t.players) {
-          if (!p.isDead) {
+          if (!p.ship.isDead) {
             for (let l of p.ship.lasers) {
               drawLaser(l);
             }

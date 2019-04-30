@@ -31,7 +31,6 @@ module.exports = function(io) {
       let user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
       let player = new Player(client.id, user.sub);
 
-
       if (
         team1.players.length <= team2.players.length &&
         team1.players.length < MAX_PLAYERS
@@ -115,14 +114,16 @@ module.exports = function(io) {
   setInterval(function() {
     for (let t of teams) {
       for (let p of t.players) {
-        if (p.isDead !== true) {
-          p.ship.update();
-        }
-        if (p.isDead) {
-          p.ship = undefined;
-          p.respawnTime -= 1;
-          if (p.respawnTime <= 0) {
-            p.spawnShip(t.id);
+        if (p.ship !== undefined) {
+          // bc of async function when ship is created
+          if (p.ship.isDead !== true) {
+            p.ship.update();
+          }
+          if (p.ship.isDead) {
+            p.ship.respawnTime -= 1;
+            if (p.ship.respawnTime <= 0) {
+              p.ship.restore();
+            }
           }
         }
       }
@@ -160,17 +161,19 @@ module.exports = function(io) {
   setInterval(function() {
     for (let t of teams) {
       for (let p of t.players) {
+        if (p.ship === undefined) break;
         for (let t1 of teams) {
           for (let p1 of t1.players) {
+            if (p1.ship === undefined) break;
             if (
-              p !== p1 &&
-              t.id !== t1.id &&
-              p1.isDead !== true &&
-              p.isDead !== true
+              p !== p1 && // can't hit himself
+              t.id !== t1.id && // can't be in the same team
+              p1.ship.isDead !== true && // can't be dead
+              p.ship.isDead !== true
             ) {
               if (p.ship.checkForHit(p1.ship.lasers)) {
                 t.tickets--;
-                p.isDead = true;
+                p.ship.isDead = true;
                 if (t.tickets === 0) {
                   gameFinished(t1);
                 }

@@ -1,4 +1,5 @@
 const Fighter = require("../Ship/Fighter");
+const User = require("../../../server/models/user");
 
 class Player {
   constructor(id, user) {
@@ -10,9 +11,9 @@ class Player {
     this.user = user;
   }
 
-  joinTeam(team) {
+  async joinTeam(team) {
     team.players.push(this);
-    this.spawnShip(team.id);
+    await this.spawnShip(team.id);
   }
   leaveTeam(team) {
     for (let i = team.players.length - 1; i >= 0; i--) {
@@ -23,14 +24,16 @@ class Player {
     }
   }
 
-  spawnShip(teamId) {
-    switch (this.user.activeShip) {
+  async spawnShip(teamId) {
+    let user = await User.findOne({ _id: this.user._id });
+    let activeShipObjectId = user.activeShip;
+    let hexString = activeShipObjectId.toHexString();
+
+    switch (hexString) {
       case "5cc5de13b03b9f3584348a69":
         this.ship = new Fighter(teamId);
         break;
     }
-    this.isDead = false;
-    this.respawnTime = TIME_DEAD * FPS;
   }
 }
 
