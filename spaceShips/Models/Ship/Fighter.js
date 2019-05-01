@@ -14,7 +14,7 @@ class Fighter extends Ship {
     };
   }
 
-  
+
 }
 
 module.exports = Fighter;

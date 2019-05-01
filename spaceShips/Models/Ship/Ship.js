@@ -162,7 +162,9 @@ class Ship {
   }
 
   shoot() {
-    this.lasers.push(new Laser(this.corners.x1, this.corners.y1, this.angle));
+    this.lasers.push(
+      new Laser(this.corners.x1, this.corners.y1, this.angle)
+    );
   }
 
   deleteLasers() {
