@@ -1,5 +1,12 @@
+
+
+let joinGame = document.getElementById("joinGame");
+
 (() => {
   getShips();
+  joinGame.addEventListener("click", () => {
+    window.location.href = url + "game";
+  });
 })();
 
 function getShips() {

@@ -13,7 +13,7 @@ global.FRICTION = 0.7;
 /** Game settings */
 let gameRuns = true;
 const MAX_PLAYERS = 5;
-const GAMELENGTH = 10 * 60; // in seconds
+const GAMELENGTH = 60 * 10; //10 * 60; // in seconds
 global.TIME_DEAD = 3; // in seconds
 let currentTime = GAMELENGTH;
 
@@ -29,20 +29,30 @@ module.exports = function(io) {
 
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
     client.on("registerForGame", jwtToken => {
-      let user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
+      let user;
+      try {
+        user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
+        console.log(user);
+      } catch (error) {
+        client.emit("serverInfo", "tokenExpired");
+        return;
+      }
+
       /* Only one Player for every account */
       let playerExistsAlready = false;
       for (let t of teams) {
         for (let p of t.players) {
-          if ((p.user._id = user.sub._id)) {
+          console.log("=============", p.userId + "   " + user.sub._id);
+          if (p.userId === user.sub._id) {
             playerExistsAlready = true;
             client.emit("serverInfo", "existsAlready");
-            break;
+            return;
           }
         }
       }
+      /** Only allow a user to create a player if he isn't already in the game */
       if (!playerExistsAlready) {
-        let player = new Player(client.id, user.sub);
+        let player = new Player(client.id, user.sub._id);
 
         if (
           team1.players.length <= team2.players.length &&
@@ -55,62 +65,61 @@ module.exports = function(io) {
           client.team = team2.id;
         } else {
           client.emit("serverInfo", "serverFull");
+          return;
         }
 
-        if (client.team !== undefined) {
-          client.on("rotatingR", bool => {
-            let shipToUpdate = searchPlayerShip(client);
-            if (shipToUpdate !== undefined) {
-              if (bool) {
-                shipToUpdate.rotatingR = true;
-              } else {
-                shipToUpdate.rotatingR = false;
-              }
+        client.on("rotatingR", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.rotatingR = true;
+            } else {
+              shipToUpdate.rotatingR = false;
             }
-          });
+          }
+        });
 
-          client.on("rotatingL", bool => {
-            let shipToUpdate = searchPlayerShip(client);
-            if (shipToUpdate !== undefined) {
-              if (bool) {
-                shipToUpdate.rotatingL = true;
-              } else {
-                shipToUpdate.rotatingL = false;
-              }
+        client.on("rotatingL", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.rotatingL = true;
+            } else {
+              shipToUpdate.rotatingL = false;
             }
-          });
+          }
+        });
 
-          client.on("thrusting", bool => {
-            let shipToUpdate = searchPlayerShip(client);
-            if (shipToUpdate !== undefined) {
-              if (bool) {
-                shipToUpdate.thrusting = true;
-              } else {
-                shipToUpdate.thrusting = false;
-              }
+        client.on("thrusting", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.thrusting = true;
+            } else {
+              shipToUpdate.thrusting = false;
             }
-          });
+          }
+        });
 
-          client.on("shooting", bool => {
-            let shipToUpdate = searchPlayerShip(client);
-            if (shipToUpdate !== undefined) {
-              if (bool) {
-                shipToUpdate.shoot();
-              }
+        client.on("shooting", bool => {
+          let shipToUpdate = searchPlayerShip(client);
+          if (shipToUpdate !== undefined) {
+            if (bool) {
+              shipToUpdate.shoot();
             }
-          });
+          }
+        });
 
-          /** After disconnect delete client */
-          client.on("disconnect", () => {
-            for (let t of teams) {
-              for (let p = t.players.length - 1; p >= 0; p--) {
-                if (t.players[p].id === client.id) {
-                  t.players.splice(p, 1);
-                }
+        /** After disconnect delete client */
+        client.on("disconnect", () => {
+          for (let t of teams) {
+            for (let p = t.players.length - 1; p >= 0; p--) {
+              if (t.players[p].id === client.id) {
+                t.players.splice(p, 1);
               }
             }
-          });
-        }
+          }
+        });
       }
     });
   });
@@ -129,7 +138,7 @@ module.exports = function(io) {
     for (let t of teams) {
       for (let p of t.players) {
         if (p.ship !== undefined) {
-          // bc of async function when ship is created
+          // maybe the ship isn't created yet at this point --> player.js
           if (p.ship.isDead !== true) {
             p.ship.update();
           }
@@ -170,7 +179,7 @@ module.exports = function(io) {
 
   //faster checks
   /** check all ships against each other
-   * - lasers
+   *  lasers
    */
   setInterval(function() {
     for (let t of teams) {
@@ -188,6 +197,8 @@ module.exports = function(io) {
               if (p.ship.checkForHit(p1.ship.lasers)) {
                 t.tickets--;
                 p.ship.isDead = true;
+                p.stats.deaths++;
+                p1.stats.kills++;
                 if (t.tickets === 0) {
                   gameFinished(t1);
                 }
@@ -202,6 +213,11 @@ module.exports = function(io) {
 
   /* Defines what happens when the game ended*/
   function gameFinished(t1) {
+    for (let t of teams) {
+      for (let p of t.players) {
+        p.updateStats();
+      }
+    }
     if (t1) {
       io.emit("gameEnd", "Team: " + t1.name + " won the game!");
     } else {
