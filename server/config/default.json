@@ -14,5 +14,5 @@
       "clientSecret": "dev_Env"
     }
   },
-  "db": "mongodb://localhost/SpaceShips"
+  "db": "mongodb://admin:thisismy1realdeployment@ds149806.mlab.com:49806/heroku_9mck7dxh"
 }
