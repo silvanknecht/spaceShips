@@ -21,7 +21,7 @@ app.get("/", function(req, res) {
   console.log("hallo");
 });
 
-httpServer.listen(process.env.port || 3000, function() {
+httpServer.listen(process.env.PORT || 3000, function() {
   console.log("HTTP - Server running at Port 3000");
 });
 
