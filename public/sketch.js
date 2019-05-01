@@ -35,7 +35,7 @@ function resizeCanv() {
   canvas.style.width = width - 20 + "px";
   canvas.style.height = height - 27 + "px";
 }
-let socket = io("http://realspaceships.herokuapp.com", {
+let socket = io("https://realspaceships.herokuapp.com", {
   transports: ["websocket"],
   upgrade: false
 });
