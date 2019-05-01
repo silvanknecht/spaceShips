@@ -59,10 +59,13 @@ socket.on("serverInfo", data => {
     alert("Server already full, please try again later!");
   } else if (data === "existsAlready") {
     alert("You're already in the game!");
+  } else if (data === "tokenExpired") {
+    window.location.href = url;
   }
 });
 
 socket.on("gameEnd", data => {
+  window.location.replace(url + "interface/index.html");
   alert(data);
 });
 
@@ -101,22 +104,25 @@ function draw() {
     for (let t of teams) {
       if (t.players.length > 0) {
         for (let p of t.players) {
-          if (!p.ship.isDead) {
-            for (let l of p.ship.lasers) {
-              drawLaser(l);
-            }
+          if (p.ship !== undefined) {
+            // bc when a player joins the ship can be undefined in the beginning
+            if (!p.ship.isDead) {
+              for (let l of p.ship.lasers) {
+                drawLaser(l);
+              }
 
-            if (p.id === socket.id) {
-              myShip = p.ship;
-              myTcolor = t.color;
+              if (p.id === socket.id) {
+                myShip = p.ship;
+                myTcolor = t.color;
+              } else {
+                drawShip(p.ship, t.color);
+              }
+
+              drawHealth(p);
             } else {
-              drawShip(p.ship, t.color);
-            }
-
-            drawHealth(p);
-          } else {
-            if (socket.id === p.id) {
-              console.log("You got killed");
+              if (socket.id === p.id) {
+                console.log("You got killed");
+              }
             }
           }
         }

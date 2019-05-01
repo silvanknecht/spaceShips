@@ -1,20 +1,26 @@
 const Fighter = require("../Ship/Fighter");
 const User = require("../../../server/models/user");
+const ShipPreferences = require("../../../server/models/shipPreferences");
 
 class Player {
-  constructor(id, user) {
+  constructor(id, userId) {
     this.id = id;
     this.ship;
     this.name = "Anonymous";
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
-    this.user = user;
+    this.userId = userId;
+    this.stats = {
+      kills: 0,
+      deaths: 0
+    };
   }
 
-  async joinTeam(team) {
+  joinTeam(team) {
     team.players.push(this);
-    await this.spawnShip(team.id);
+    this.spawnShip(team.id);
   }
+
   leaveTeam(team) {
     for (let i = team.players.length - 1; i >= 0; i--) {
       if (team.players[i].id === this.id) {
@@ -25,7 +31,7 @@ class Player {
   }
 
   async spawnShip(teamId) {
-    let user = await User.findOne({ _id: this.user._id });
+    let user = await User.findOne({ _id: this.userId });
     let activeShipObjectId = user.activeShip;
     let hexString = activeShipObjectId.toHexString();
 
@@ -34,6 +40,21 @@ class Player {
         this.ship = new Fighter(teamId);
         break;
     }
+  }
+
+  async updateStats() {
+    let user = await User.findOne({ _id: this.userId });
+    let activeShipObjectId = user.activeShip;
+
+    await ShipPreferences.findOneAndUpdate(
+      {
+        userId: this.userId,
+        shipId: activeShipObjectId
+      },
+      { $inc: { kills: this.stats.kills, deaths: this.stats.deaths } }
+    );
+    this.stats.kills = 0;
+    this.stats.deaths = 0;
   }
 }
 
