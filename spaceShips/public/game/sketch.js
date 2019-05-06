@@ -7,6 +7,7 @@ let height;
 let diffy = 0;
 let diffx = 0;
 
+const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
 const SCOREBOARD_HIGHT = 40;
 const PLAYFIELDHIGHT = 1080;
 const HEIGHT = PLAYFIELDHIGHT + SCOREBOARD_HIGHT;
@@ -16,7 +17,7 @@ let middle = { x: WIDTH / 2, y: PLAYFIELDHIGHT / 2 + SCOREBOARD_HIGHT };
 
 /** Background */
 let stars = [];
-const STARS = 1000;
+const STARS = FIELDCOUNT * 2000;
 
 window.onload = function() {
   canvas = document.getElementsByTagName("canvas")[0];
@@ -129,6 +130,18 @@ function draw() {
         }
 
         if (myShip !== undefined) {
+          if (myShip.position.x > middle.x) {
+            diffx = myShip.position.x - middle.x;
+          } else {
+            diffx = 0;
+          }
+
+          if (myShip.position.y > middle.y) {
+            diffy = myShip.position.y - middle.y;
+          } else {
+            diffy = 0;
+          }
+
           drawShip(myShip, myTcolor);
         }
       }
@@ -159,19 +172,18 @@ function drawShip(ship, tcolor) {
 
   // draw ship Body
   let { x1, x2, x3, y1, y2, y3 } = corners;
-  diffx = x - middle.x;
-  diffy = y - middle.y;
-  let x1N = x1 - diffx;
-  let x2N = x2 - diffx;
-  let x3N = x3 - diffx;
-  let y1N = y1 - diffy;
-  let y2N = y2 - diffy;
-  let y3N = y3 - diffy;
   push();
   strokeWeight(2);
   stroke(color);
   fill(tcolor);
-  triangle(x1N, y1N, x2N, y2N, x3N, y3N);
+  triangle(
+    x1 - diffx,
+    y1 - diffy,
+    x2 - diffx,
+    y2 - diffy,
+    x3 - diffx,
+    y3 - diffy
+  );
   pop();
 
   // draw shield
