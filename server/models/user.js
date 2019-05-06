@@ -77,7 +77,7 @@ userSchema.methods.generateAuthToken = function() {
   const token = JWT.sign(
     {
       iss: "NodeJs_Authentification",
-      sub: this,
+      sub: { _id: this._id },
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 60 * 60 // current date + 1 hour
     },

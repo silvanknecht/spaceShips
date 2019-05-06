@@ -1,11 +1,17 @@
-
-
-let joinGame = document.getElementById("joinGame");
+let joinGame;
+let logout;
 
 (() => {
+  joinGame = document.getElementById("joinGame");
+  logout = document.getElementById("logout");
+
   getShips();
   joinGame.addEventListener("click", () => {
     window.location.href = url + "game";
+  });
+  logout.addEventListener("click", () => {
+    localStorage.removeItem("Authorization");
+    window.location.href = url;
   });
 })();
 
