@@ -4,11 +4,15 @@ let time;
 let canvas;
 let width;
 let height;
+let diffy = 0;
+let diffx = 0;
 
 const SCOREBOARD_HIGHT = 40;
-const HEIGHT = 1060 + SCOREBOARD_HIGHT;
+const PLAYFIELDHIGHT = 1080;
+const HEIGHT = PLAYFIELDHIGHT + SCOREBOARD_HIGHT;
 const WIDTH = 1920;
 const FPS = 60;
+let middle = { x: WIDTH / 2, y: PLAYFIELDHIGHT / 2 + SCOREBOARD_HIGHT };
 
 /** Background */
 let stars = [];
@@ -88,9 +92,6 @@ function draw() {
   let myShip;
   let myTcolor;
   background(0);
-  /** Scorebaord */
-  fill("#505050");
-  rect(0, 0, WIDTH, SCOREBOARD_HIGHT);
 
   /** Background */
   for (let i = 0; i < STARS; i++) {
@@ -133,6 +134,9 @@ function draw() {
       }
     }
     keyDown();
+    /** Scorebaord */
+    fill("#505050");
+    rect(0, 0, WIDTH, SCOREBOARD_HIGHT);
     drawTickets();
     if (time !== undefined) {
       drawTime();
@@ -155,11 +159,19 @@ function drawShip(ship, tcolor) {
 
   // draw ship Body
   let { x1, x2, x3, y1, y2, y3 } = corners;
+  diffx = x - middle.x;
+  diffy = y - middle.y;
+  let x1N = x1 - diffx;
+  let x2N = x2 - diffx;
+  let x3N = x3 - diffx;
+  let y1N = y1 - diffy;
+  let y2N = y2 - diffy;
+  let y3N = y3 - diffy;
   push();
   strokeWeight(2);
   stroke(color);
   fill(tcolor);
-  triangle(x1, y1, x2, y2, x3, y3);
+  triangle(x1N, y1N, x2N, y2N, x3N, y3N);
   pop();
 
   // draw shield
@@ -167,7 +179,7 @@ function drawShip(ship, tcolor) {
     let shieldDensity = map(hitpoints, 0, maxHitpoints, 0, 180);
     push();
     fill(0, 0, 255, shieldDensity);
-    ellipse(x, y, size * 3);
+    ellipse(x - diffx, y - diffy, size * 3);
     pop();
   }
 
@@ -175,7 +187,7 @@ function drawShip(ship, tcolor) {
   let healthDraw = map(health, 0, 100, 0, 30);
   push();
   fill("#FF0000");
-  rect(x - healthDraw / 2, y - size - 15, healthDraw, 2.5);
+  rect(x - diffx - healthDraw / 2, y - diffy - size - 15, healthDraw, 2.5);
   pop();
   pop();
 }
@@ -188,7 +200,7 @@ function drawLaser(laser) {
   push();
   strokeWeight(4);
   stroke(color);
-  line(x1, y1, x2, y2);
+  line(x1 - diffx, y1 - diffy, x2 - diffx, y2 - diffy);
   pop();
   pop();
 }
