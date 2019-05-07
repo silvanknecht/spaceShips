@@ -17,7 +17,7 @@ let middle = { x: WIDTH / 2, y: PLAYFIELDHIGHT / 2 + SCOREBOARD_HIGHT };
 
 /** Background */
 let stars = [];
-const STARS = FIELDCOUNT * 2000;
+const STARS = 1 * 1000; //FIELDCOUNT
 
 window.onload = function() {
   canvas = document.getElementsByTagName("canvas")[0];
@@ -40,7 +40,7 @@ function resizeCanv() {
   canvas.style.width = width - 20 + "px";
   canvas.style.height = height - 27 + "px";
 }
-let socket = io("https://realspaceships.herokuapp.com", {
+let socket = io("http://localhost:5000", {
   transports: ["websocket"],
   upgrade: false
 });
