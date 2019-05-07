@@ -4,7 +4,8 @@
   "description": "",
   "main": "./server/app.js",
   "scripts": {
-    "test": "jest --watchAll --verbose --env=node --runInBand --coverage"
+    "test": "jest --watchAll --verbose --env=node --runInBand --coverage",
+"start": "node ./server/app.js"
   },
   "repository": {
     "type": "git",

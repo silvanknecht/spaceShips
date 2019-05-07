@@ -1,4 +1,4 @@
-const url = "http://localhost:5000/";
+const url = "https://realspaceships.herokuapp.com/";
 let localStorage;
 let me;
 
