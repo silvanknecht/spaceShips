@@ -13,7 +13,7 @@ global.FRICTION = 0.7;
 /** Game settings */
 let gameRuns = true;
 const MAX_PLAYERS = 5;
-const GAMELENGTH = 60 * 10; //10 * 60; // in seconds
+const GAMELENGTH = 60 *10; //10 * 60; // in seconds
 global.TIME_DEAD = 3; // in seconds
 let currentTime = GAMELENGTH;
 

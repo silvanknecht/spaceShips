@@ -2,8 +2,8 @@ class Star {
   constructor() {
     this.x = Math.random() * FIELDCOUNT * WIDTH;
     this.y =
-      Math.random() * (FIELDCOUNT*HEIGHT - SCOREBOARD_HIGHT) +
-      SCOREBOARD_HIGHT;
+      Math.random() * (FIELDCOUNT*HEIGHT-100 - SCOREBOARD_HIGHT) +
+      SCOREBOARD_HIGHT-100;
     this.noneBlinkSize = Math.random() * (3.5 - 0.5) + 0.5;
     this.d = this.noneBlinkSize;
     this.blinkSize = this.noneBlinkSize + 10;

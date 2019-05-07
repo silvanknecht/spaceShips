@@ -95,9 +95,12 @@ function draw() {
   background(0);
 
   /** Background */
+  push();
+  translate(0-diffx, SCOREBOARD_HIGHT-diffy);
   for (let i = 0; i < STARS; i++) {
     stars[i].update();
   }
+  pop();
 
   if (teams !== undefined) {
     if (items !== undefined) {
@@ -130,17 +133,17 @@ function draw() {
         }
 
         if (myShip !== undefined) {
-          if (myShip.position.x > middle.x) {
+          //if (myShip.position.x > middle.x) {
             diffx = myShip.position.x - middle.x;
-          } else {
-            diffx = 0;
-          }
+         // } else {
+          //   diffx = 0;
+          // }
 
-          if (myShip.position.y > middle.y) {
+          // if (myShip.position.y > middle.y) {
             diffy = myShip.position.y - middle.y;
-          } else {
-            diffy = 0;
-          }
+          // } else {
+          //   diffy = 0;
+          // }
 
           drawShip(myShip, myTcolor);
         }
