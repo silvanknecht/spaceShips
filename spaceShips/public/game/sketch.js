@@ -13,7 +13,7 @@ const PLAYFIELDHIGHT = 1080;
 const HEIGHT = PLAYFIELDHIGHT + SCOREBOARD_HIGHT;
 const WIDTH = 1920;
 const FPS = 60;
-let middle = { x: WIDTH / 2, y: PLAYFIELDHIGHT / 2 + SCOREBOARD_HIGHT };
+let middle = { x: WIDTH / 2, y: (PLAYFIELDHIGHT / 2) + SCOREBOARD_HIGHT };
 
 /** Background */
 let stars = [];
@@ -254,7 +254,7 @@ function drawTime() {
   push();
   fill("#F55AC");
   textSize(16);
-  text(time, width / 2, 20);
+  text(time, WIDTH/2 , 20);
   pop();
 }
 
@@ -262,7 +262,7 @@ function drawItems() {
   for (let i of items) {
     push();
     fill("#0000FF");
-    ellipse(i.position.x, i.position.y, i.d / 2);
+    ellipse(i.position.x-diffx, i.position.y-diffy, i.d / 2);
     pop();
   }
 }
