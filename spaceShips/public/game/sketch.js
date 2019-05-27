@@ -7,6 +7,7 @@ let height;
 let diffy = 0;
 let diffx = 0;
 
+const MINIMAPTOBOARDER = 10;
 const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
 const SCOREBOARD_HIGHT = 40;
 const CANVASHIGHT = 1040;
@@ -39,7 +40,7 @@ function resizeCanv() {
     document.documentElement.clientHeight ||
     document.body.clientHeight;
   canvas.style.width = width + "px";
-  canvas.style.height = height+ "px";
+  canvas.style.height = height + "px";
 }
 let socket = io(url, {
   transports: ["websocket"],
@@ -58,7 +59,7 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
-  //console.log("Teams: ", teams);
+  console.log("Teams: ", teams);
 });
 
 // TODO: change to switch case
@@ -97,9 +98,9 @@ function draw() {
   let myTcolor;
   background(200);
   push();
-  translate(-diffx, SCOREBOARD_HIGHT-diffy);
+  translate(-diffx, SCOREBOARD_HIGHT - diffy);
   fill(0);
-  rect(0, 0, FIELDCOUNT*WIDTH, FIELDCOUNT * HEIGHT);
+  rect(0, 0, FIELDCOUNT * WIDTH, FIELDCOUNT * HEIGHT);
   pop();
   /** Background */
   push();
@@ -109,10 +110,19 @@ function draw() {
   }
   pop();
 
+  if (items !== undefined) {
+    drawItems();
+  }
+
+  // MINIMAP BACKGROUND
+  push();
+  translate(0 + MINIMAPTOBOARDER, HEIGHT - 180 - MINIMAPTOBOARDER);
+  fill(150);
+  rect(0, 0, 360, 180);
+  pop();
+
+  // SHIPS
   if (teams !== undefined) {
-    if (items !== undefined) {
-      drawItems();
-    }
     for (let t of teams) {
       if (t.players.length > 0) {
         for (let p of t.players) {
@@ -128,6 +138,8 @@ function draw() {
                 myTcolor = t.color;
               } else {
                 drawShip(p.ship, t.color);
+
+                drawShipOnMinimap(p.ship, t.color);
               }
 
               drawHealth(p);
@@ -151,21 +163,19 @@ function draw() {
           // } else {
           //   diffy = 0;
           // }
-          // if (myShip.position.x < middle.x) {
-          //   push();
-          //   fill("#FFF");
-          //   rect(0, SCOREBOARD_HIGHT, diffx,CANVASHIGHT );
-          //   pop();
           // }
 
           drawShip(myShip, myTcolor);
+          drawShipOnMinimap(myShip, "#32CD32"); // show myself greeen on the minimap
         }
       }
     }
     keyDown();
     /** Scorebaord */
+    push();
     fill("#505050");
     rect(0, 0, WIDTH, SCOREBOARD_HIGHT);
+    pop();
     drawTickets();
     if (time !== undefined) {
       drawTime();
@@ -241,6 +251,22 @@ function drawHealth(c) {
     text("Your health: " + health, WIDTH - 200, HEIGHT - 60);
     pop();
   }
+  pop();
+}
+
+function drawShipOnMinimap(ship, color) {
+  push();
+  translate(0 + MINIMAPTOBOARDER, HEIGHT - 180 - MINIMAPTOBOARDER);
+  let {
+    position: { x },
+    position: { y }
+  } = ship;
+
+  let xOnMinimap = map(x, 0, 4 * WIDTH, 0, 360);
+  let yOnMinimap = map(y, 0, 4 * HEIGHT, 0, 180);
+
+  fill(color);
+  ellipse(xOnMinimap, yOnMinimap, 10);
   pop();
 }
 
