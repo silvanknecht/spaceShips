@@ -1,5 +1,5 @@
-const url = "http://localhost:5000/";
-//const url = "https://mighty-eyrie-58006.herokuapp.com/"
+//const url = "http://localhost:5000/";
+const url = "https://mighty-eyrie-58006.herokuapp.com/"
 
 let localStorage;
 let me;

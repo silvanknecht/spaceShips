@@ -4,8 +4,8 @@ const config = require("config");
 const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
 
-global.HEIGHT = 4*1060;
-global.WIDTH = 4*1920;
+global.HEIGHT = 4 * 1060;
+global.WIDTH = 4 * 1920;
 global.SCOREBOARD_HEIGHT = 40;
 global.FPS = 60;
 global.FRICTION = 0.7;
@@ -13,7 +13,7 @@ global.FRICTION = 0.7;
 /** Game settings */
 let gameRuns = true;
 const MAX_PLAYERS = 5;
-const GAMELENGTH = 60 *10; //10 * 60; // in seconds
+const GAMELENGTH = 60 * 10; //10 * 60; // in seconds
 global.TIME_DEAD = 3; // in seconds
 let currentTime = GAMELENGTH;
 
@@ -119,6 +119,10 @@ module.exports = function(io) {
               }
             }
           }
+        });
+
+        client.on("p1ng", function() {
+          client.emit("p0ng");
         });
       }
     });

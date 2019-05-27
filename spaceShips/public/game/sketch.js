@@ -57,8 +57,10 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
+  //console.log("Teams: ", teams);
 });
 
+// TODO: change to switch case
 socket.on("serverInfo", data => {
   if (data === "serverFull") {
     alert("Server already full, please try again later!");
@@ -290,3 +292,18 @@ function keyPressed() {
     socket.emit("shooting", true);
   }
 }
+
+
+/** LATENCY CLIENTSIDE**/
+var startTime;
+
+setInterval(function() {
+  startTime = Date.now();
+  socket.emit('p1ng');
+  console.log("Ping sent!");
+}, 1000);
+
+socket.on('p0ng', function() {
+  latency = Date.now() - startTime;
+  console.log(latency);
+});
