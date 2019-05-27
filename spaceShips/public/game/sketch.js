@@ -58,7 +58,7 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
-  console.log("Teams: ", teams);
+  //console.log("Teams: ", teams);
 });
 
 // TODO: change to switch case
