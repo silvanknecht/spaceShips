@@ -9,15 +9,15 @@ let diffx = 0;
 
 const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
 const SCOREBOARD_HIGHT = 40;
-const PLAYFIELDHIGHT = 1080;
-const HEIGHT = PLAYFIELDHIGHT + SCOREBOARD_HIGHT;
+const CANVASHIGHT = 1040;
+const HEIGHT = CANVASHIGHT + SCOREBOARD_HIGHT;
 const WIDTH = 1920;
 const FPS = 60;
-let middle = { x: WIDTH / 2, y: PLAYFIELDHIGHT / 2 + SCOREBOARD_HIGHT };
+let middle = { x: WIDTH / 2, y: CANVASHIGHT / 2 + SCOREBOARD_HIGHT };
 
 /** Background */
 let stars = [];
-const STARS = 1 * 1000; //FIELDCOUNT
+const STARS = 1 * 500; //TODO: performance loss if to many stars... maybe static (gif) background!
 
 window.onload = function() {
   canvas = document.getElementsByTagName("canvas")[0];
@@ -27,6 +27,7 @@ window.onresize = function() {
   resizeCanv();
 };
 
+/** Make canv fit fullscreen for every browser in resolution 16:9 */
 function resizeCanv() {
   width =
     window.innerWidth ||
@@ -37,8 +38,8 @@ function resizeCanv() {
     window.innerHeight ||
     document.documentElement.clientHeight ||
     document.body.clientHeight;
-  canvas.style.width = width - 20 + "px";
-  canvas.style.height = height - 27 + "px";
+  canvas.style.width = width + "px";
+  canvas.style.height = height+ "px";
 }
 let socket = io(url, {
   transports: ["websocket"],
@@ -57,7 +58,7 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
-  //console.log("Teams: ", teams);
+  console.log("Teams: ", teams);
 });
 
 // TODO: change to switch case
@@ -94,8 +95,12 @@ function setup() {
 function draw() {
   let myShip;
   let myTcolor;
-  background(0);
-
+  background(200);
+  push();
+  translate(-diffx, SCOREBOARD_HIGHT-diffy);
+  fill(0);
+  rect(0, 0, FIELDCOUNT*WIDTH, FIELDCOUNT * HEIGHT);
+  pop();
   /** Background */
   push();
   translate(0 - diffx, SCOREBOARD_HIGHT - diffy);
@@ -145,6 +150,12 @@ function draw() {
           diffy = myShip.position.y - middle.y;
           // } else {
           //   diffy = 0;
+          // }
+          // if (myShip.position.x < middle.x) {
+          //   push();
+          //   fill("#FFF");
+          //   rect(0, SCOREBOARD_HIGHT, diffx,CANVASHIGHT );
+          //   pop();
           // }
 
           drawShip(myShip, myTcolor);
@@ -227,7 +238,7 @@ function drawHealth(c) {
     push();
     fill(color);
     textSize(16);
-    text("Your health: " + health, WIDTH - 200, HEIGHT-60);
+    text("Your health: " + health, WIDTH - 200, HEIGHT - 60);
     pop();
   }
   pop();

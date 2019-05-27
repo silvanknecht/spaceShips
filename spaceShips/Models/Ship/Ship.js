@@ -192,6 +192,7 @@ class Ship {
     return { x, y };
   }
 
+  // direction in which the points
   gitveTeamAngle(teamId) {
     switch (teamId) {
       case 0:

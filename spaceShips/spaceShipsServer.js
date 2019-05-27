@@ -4,7 +4,7 @@ const config = require("config");
 const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
 
-global.HEIGHT = 4 * 1060;
+global.HEIGHT = 4 * 1080;
 global.WIDTH = 4 * 1920;
 global.SCOREBOARD_HEIGHT = 40;
 global.FPS = 60;
