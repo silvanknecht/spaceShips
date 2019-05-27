@@ -13,7 +13,7 @@ const PLAYFIELDHIGHT = 1080;
 const HEIGHT = PLAYFIELDHIGHT + SCOREBOARD_HIGHT;
 const WIDTH = 1920;
 const FPS = 60;
-let middle = { x: WIDTH / 2, y: (PLAYFIELDHIGHT / 2) + SCOREBOARD_HIGHT };
+let middle = { x: WIDTH / 2, y: PLAYFIELDHIGHT / 2 + SCOREBOARD_HIGHT };
 
 /** Background */
 let stars = [];
@@ -98,7 +98,7 @@ function draw() {
 
   /** Background */
   push();
-  translate(0-diffx, SCOREBOARD_HIGHT-diffy);
+  translate(0 - diffx, SCOREBOARD_HIGHT - diffy);
   for (let i = 0; i < STARS; i++) {
     stars[i].update();
   }
@@ -136,13 +136,13 @@ function draw() {
 
         if (myShip !== undefined) {
           //if (myShip.position.x > middle.x) {
-            diffx = myShip.position.x - middle.x;
-         // } else {
+          diffx = myShip.position.x - middle.x;
+          // } else {
           //   diffx = 0;
           // }
 
           // if (myShip.position.y > middle.y) {
-            diffy = myShip.position.y - middle.y;
+          diffy = myShip.position.y - middle.y;
           // } else {
           //   diffy = 0;
           // }
@@ -164,7 +164,7 @@ function draw() {
 
 function drawShip(ship, tcolor) {
   push();
-  translate(0, SCOREBOARD_HIGHT);
+  translate(0 - diffx, SCOREBOARD_HIGHT - diffy);
   let {
     size,
     color,
@@ -181,14 +181,7 @@ function drawShip(ship, tcolor) {
   strokeWeight(2);
   stroke(color);
   fill(tcolor);
-  triangle(
-    x1 - diffx,
-    y1 - diffy,
-    x2 - diffx,
-    y2 - diffy,
-    x3 - diffx,
-    y3 - diffy
-  );
+  triangle(x1, y1, x2, y2, x3, y3);
   pop();
 
   // draw shield
@@ -196,7 +189,7 @@ function drawShip(ship, tcolor) {
     let shieldDensity = map(hitpoints, 0, maxHitpoints, 0, 180);
     push();
     fill(0, 0, 255, shieldDensity);
-    ellipse(x - diffx, y - diffy, size * 3);
+    ellipse(x, y, size * 3);
     pop();
   }
 
@@ -204,20 +197,20 @@ function drawShip(ship, tcolor) {
   let healthDraw = map(health, 0, 100, 0, 30);
   push();
   fill("#FF0000");
-  rect(x - diffx - healthDraw / 2, y - diffy - size - 15, healthDraw, 2.5);
+  rect(x - healthDraw / 2, y - size - 15, healthDraw, 2.5);
   pop();
   pop();
 }
 
 function drawLaser(laser) {
   push();
-  translate(0, SCOREBOARD_HIGHT);
+  translate(0 - diffx, SCOREBOARD_HIGHT - diffy);
   let { color } = laser;
   let { x1, x2, y1, y2 } = laser.position;
   push();
   strokeWeight(4);
   stroke(color);
-  line(x1 - diffx, y1 - diffy, x2 - diffx, y2 - diffy);
+  line(x1, y1, x2, y2);
   pop();
   pop();
 }
@@ -234,7 +227,7 @@ function drawHealth(c) {
     push();
     fill(color);
     textSize(16);
-    text("Your health: " + health, WIDTH - 200, HEIGHT - 20 - SCOREBOARD_HIGHT);
+    text("Your health: " + health, WIDTH - 200, HEIGHT-60);
     pop();
   }
   pop();
@@ -256,15 +249,16 @@ function drawTime() {
   push();
   fill("#F55AC");
   textSize(16);
-  text(time, WIDTH/2 , 20);
+  text(time, WIDTH / 2, 20);
   pop();
 }
 
 function drawItems() {
   for (let i of items) {
     push();
+    translate(0 - diffx, SCOREBOARD_HIGHT - diffy);
     fill("#0000FF");
-    ellipse(i.position.x-diffx, i.position.y-diffy, i.d / 2);
+    ellipse(i.position.x, i.position.y, i.d / 2);
     pop();
   }
 }
@@ -293,17 +287,16 @@ function keyPressed() {
   }
 }
 
-
 /** LATENCY CLIENTSIDE**/
 var startTime;
 
 setInterval(function() {
   startTime = Date.now();
-  socket.emit('p1ng');
+  socket.emit("p1ng");
   console.log("Ping sent!");
 }, 1000);
 
-socket.on('p0ng', function() {
+socket.on("p0ng", function() {
   latency = Date.now() - startTime;
   console.log(latency);
 });

@@ -156,36 +156,8 @@ module.exports = function(io) {
       }
     }
     io.emit("update", prepareDataToSend());
-  }, 1000 / FPS);
 
-  /** GAMETIME */
-  setInterval(() => {
-    if (currentTime > 0) {
-      currentTime--;
-      io.emit("serverTime", currentTime);
-    } else {
-      gameFinished();
-      currentTime = GAMELENGTH;
-    }
-  }, 1000);
-
-  /** ITEMS  */
-
-  const Shield = require("./Models/Item/Shield");
-  global.items = [];
-
-  setInterval(() => {
-    if (items.length < MAX_PLAYERS) {
-      let newItem = new Shield();
-      items.push(newItem);
-    }
-  }, 20000);
-
-  //faster checks
-  /** check all ships against each other
-   *  lasers
-   */
-  setInterval(function() {
+    //** Collision detection */
     for (let t of teams) {
       for (let p of t.players) {
         if (p.ship === undefined) break;
@@ -212,8 +184,30 @@ module.exports = function(io) {
         }
       }
     }
-    //
-  }, 1);
+  }, 1000 / FPS);
+
+  /** GAMETIME */
+  setInterval(() => {
+    if (currentTime > 0) {
+      currentTime--;
+      io.emit("serverTime", currentTime);
+    } else {
+      gameFinished();
+      currentTime = GAMELENGTH;
+    }
+  }, 1000);
+
+  /** ITEMS  */
+  const Shield = require("./Models/Item/Shield");
+  global.items = [];
+
+  setInterval(() => {
+    if (items.length < MAX_PLAYERS) {
+      let newItem = new Shield();
+      items.push(newItem);
+    }
+  }, 10000);
+
 
   /* Defines what happens when the game ended*/
   function gameFinished(t1) {
