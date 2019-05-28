@@ -30,6 +30,8 @@ module.exports = function(io) {
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
     client.on("registerForGame", jwtToken => {
       let user;
+
+      // check if the user is still allowed on the server or if he needs a relogin
       try {
         user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
         console.log(user);
@@ -50,6 +52,7 @@ module.exports = function(io) {
           }
         }
       }
+
       /** Only allow a user to create a player if he isn't already in the game */
       if (!playerExistsAlready) {
         let player = new Player(client.id, user.sub._id);
@@ -121,6 +124,7 @@ module.exports = function(io) {
           }
         });
 
+        // LATENCY CHECK ON CLINENT SIDE (ping and pong events are reserved by socket.io and can therefore not be used)
         client.on("p1ng", function() {
           client.emit("p0ng");
         });
