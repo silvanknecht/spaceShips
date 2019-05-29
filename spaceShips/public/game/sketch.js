@@ -231,7 +231,7 @@ function drawLaser(laser) {
   push();
   strokeWeight(4);
   stroke(color);
-  line(x1, y1, x2, y2);
+  line(Math.floor(x1), Math.floor(y1), Math.floor(x2), Math.floor(y2));
   pop();
   pop();
 }

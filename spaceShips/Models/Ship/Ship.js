@@ -14,15 +14,16 @@ class Ship {
     this.size = 18; // middle to corners
     this.position = this.giveTeamPosition(teamId);
     this.angle = this.gitveTeamAngle(teamId); // rad
-    this.turnSpeed = 90; // grad per second
+    this.turnSpeed = 110; // grad per second
     this.rotatingR = false;
     this.rotatingL = false;
-    this.shipThrust = 5;
+    this.shipThrust = 10;
     this.thrusting = false;
     this.thrust = {
       x: 0, // pixel per second
       y: 0 // pixel per second
     };
+    this.speedcap = 10;
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
     this.ammo = 100;
@@ -36,6 +37,7 @@ class Ship {
       l.update();
     }
     // hudge performance loss without if statements
+    // check if boarder is left
     if (
       this.position.x < this.size + 5 ||
       this.position.x > WIDTH - (this.size + 5)
@@ -128,6 +130,17 @@ class Ship {
     if (this.thrusting) {
       this.thrust.x += (this.shipThrust * Math.cos(this.angle)) / FPS;
       this.thrust.y -= (this.shipThrust * Math.sin(this.angle)) / FPS;
+
+      if (this.thrust.x > this.speedcap) {
+        this.thrust.x = this.speedcap;
+      } else if (this.thrust.x < -this.speedcap) {
+        this.thrust.x = -this.speedcap;
+      }
+      if (this.thrust.y > this.speedcap) {
+        this.thrust.y = this.speedcap;
+      } else if (this.thrust.y < -this.speedcap) {
+        this.thrust.y = -this.speedcap;
+      }
     } else {
       this.thrust.x -= (FRICTION * this.thrust.x) / FPS;
       this.thrust.y -= (FRICTION * this.thrust.y) / FPS;
@@ -162,9 +175,7 @@ class Ship {
   }
 
   shoot() {
-    this.lasers.push(
-      new Laser(this.corners.x1, this.corners.y1, this.angle)
-    );
+    this.lasers.push(new Laser(this.corners.x1, this.corners.y1, this.angle));
   }
 
   deleteLasers() {

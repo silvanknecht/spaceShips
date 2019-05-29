@@ -9,6 +9,10 @@ const logger = createLogger({
       filename: "./authentication_info.log",
       level: "info"
     }),
+    new transports.File({
+      filename: "./authentication_error.log",
+      level: "error"
+    }),
     new transports.Console({
       level: "debug",
       format: format.combine(
@@ -19,10 +23,12 @@ const logger = createLogger({
     })
   ]
 });
-// all error messages will be stored in the database
+
+// all error messages will additionaly be stored in a database
+let errorDatabase = "mongodb://localhost/APIAuthentication";
 logger.add(
   new winston.transports.MongoDB({
-    db: "mongodb://localhost/APIAuthentication",
+    db: errorDatabase,
     level: "error"
   })
 );

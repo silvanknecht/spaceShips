@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+const logger = require("../server/middleware/logger");
 const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
 
@@ -25,16 +26,14 @@ teams.push(team2);
 
 module.exports = function(io) {
   io.on("connection", client => {
-    console.log("New ship has connected to space!");
-
-    /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
+        /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
     client.on("registerForGame", jwtToken => {
       let user;
 
       // check if the user is still allowed on the server or if he needs a relogin
       try {
         user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
-        console.log(user);
+        logger.debug("A user tries to connect to the server", user);
       } catch (error) {
         client.emit("serverInfo", "tokenExpired");
         return;
@@ -44,7 +43,7 @@ module.exports = function(io) {
       let playerExistsAlready = false;
       for (let t of teams) {
         for (let p of t.players) {
-          console.log("=============", p.userId + "   " + user.sub._id);
+          logger.debug("Checking if user is alread assigned to a player: ", p.userId + "   " + user.sub._id);
           if (p.userId === user.sub._id) {
             playerExistsAlready = true;
             client.emit("serverInfo", "existsAlready");
