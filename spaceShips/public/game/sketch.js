@@ -59,7 +59,7 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
-  console.log("Teams: ", teams);
+  //console.log("Teams: ", teams);
 });
 
 // TODO: change to switch case
@@ -231,7 +231,7 @@ function drawLaser(laser) {
   push();
   strokeWeight(4);
   stroke(color);
-  line(Math.floor(x1), Math.floor(y1), Math.floor(x2), Math.floor(y2));
+  line(x1, y1, x2, y2);
   pop();
   pop();
 }
@@ -335,5 +335,5 @@ setInterval(function() {
 
 socket.on("p0ng", function() {
   latency = Date.now() - startTime;
-  console.log(latency);
+  console.log("Ping: ", latency);
 });
