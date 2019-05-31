@@ -241,13 +241,13 @@ class Ship {
 
   restore() {
     this.health = 100;
-    this.size = 18; // middle to corners
+    this.size = 9; // middle to corners
     this.position = this.giveTeamPosition(this.teamId);
     this.angle = this.gitveTeamAngle(this.teamId); // rad
-    this.turnSpeed = 90; // grad per second
+    this.turnSpeed = 110; // grad per second
     this.rotatingR = false;
     this.rotatingL = false;
-    this.shipThrust = 5;
+    this.shipThrust = 10;
     this.thrusting = false;
     this.thrust = {
       x: 0, // pixel per second

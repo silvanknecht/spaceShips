@@ -1,6 +1,6 @@
 class Laser {
   constructor(x1, y1, shipAngle) {
-    this.speed = 600; // Pixels per second //changed from 1200
+    this.speed = 1200; // Pixels per second //changed from 1200
     this.dmg = 10;
     this.length = 10;
     this.position = {
