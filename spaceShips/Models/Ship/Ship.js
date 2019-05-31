@@ -11,12 +11,9 @@ class Ship {
     this.name = Math.random();
     this.color = getRandomColor();
     this.health = 100;
-    this.size = 9; // middle to corners
+    this.size = 14; // middle to corners
     this.position = this.giveTeamPosition(teamId);
     this.angle = this.gitveTeamAngle(teamId); // rad
-    this.turnSpeed = 110; // grad per second
-    this.rotatingR = false;
-    this.rotatingL = false;
     this.shipThrust = 10;
     this.thrusting = false;
     this.thrust = {
@@ -150,12 +147,6 @@ class Ship {
   }
 
   turn() {
-    if (this.rotatingR) {
-      this.angle += ((this.turnSpeed / 180) * Math.PI) / FPS;
-    } else if (this.rotatingL) {
-      this.angle -= ((this.turnSpeed / 180) * Math.PI) / FPS;
-    }
-
     this.corners.x1 =
       this.position.x + (4 / 3) * this.size * Math.cos(this.angle);
     this.corners.y1 =
@@ -241,12 +232,9 @@ class Ship {
 
   restore() {
     this.health = 100;
-    this.size = 9; // middle to corners
+    this.size = 14; // middle to corners
     this.position = this.giveTeamPosition(this.teamId);
     this.angle = this.gitveTeamAngle(this.teamId); // rad
-    this.turnSpeed = 110; // grad per second
-    this.rotatingR = false;
-    this.rotatingL = false;
     this.shipThrust = 10;
     this.thrusting = false;
     this.thrust = {

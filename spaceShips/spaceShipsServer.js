@@ -26,7 +26,7 @@ teams.push(team2);
 
 module.exports = function(io) {
   io.on("connection", client => {
-        /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
+    /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
     client.on("registerForGame", jwtToken => {
       let user;
 
@@ -43,7 +43,10 @@ module.exports = function(io) {
       let playerExistsAlready = false;
       for (let t of teams) {
         for (let p of t.players) {
-          logger.debug("Checking if user is alread assigned to a player: ", p.userId + "   " + user.sub._id);
+          logger.debug(
+            "Checking if user is alread assigned to a player: ",
+            p.userId + "   " + user.sub._id
+          );
           if (p.userId === user.sub._id) {
             playerExistsAlready = true;
             client.emit("serverInfo", "existsAlready");
@@ -70,25 +73,10 @@ module.exports = function(io) {
           return;
         }
 
-        client.on("rotatingR", bool => {
+        client.on("turn", mouseDir => {
           let shipToUpdate = searchPlayerShip(client);
           if (shipToUpdate !== undefined) {
-            if (bool) {
-              shipToUpdate.rotatingR = true;
-            } else {
-              shipToUpdate.rotatingR = false;
-            }
-          }
-        });
-
-        client.on("rotatingL", bool => {
-          let shipToUpdate = searchPlayerShip(client);
-          if (shipToUpdate !== undefined) {
-            if (bool) {
-              shipToUpdate.rotatingL = true;
-            } else {
-              shipToUpdate.rotatingL = false;
-            }
+            shipToUpdate.angle = mouseDir;
           }
         });
 
@@ -210,7 +198,6 @@ module.exports = function(io) {
       items.push(newItem);
     }
   }, 10000);
-
 
   /* Defines what happens when the game ended*/
   function gameFinished(t1) {

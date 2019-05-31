@@ -6,6 +6,8 @@ let width;
 let height;
 let diffy = 0;
 let diffx = 0;
+let mX = 0;
+let mY = 0;
 
 const MINIMAPTOBOARDER = 10;
 const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
@@ -59,7 +61,13 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
-  //console.log("Teams: ", teams);
+  console.log("Teams: ", teams);
+
+
+    let x = mX - WIDTH / 2;
+    let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
+    socket.emit("turn", Math.atan2(y, x) * -1);
+  
 });
 
 // TODO: change to switch case
@@ -90,10 +98,14 @@ function setup() {
   for (let i = 0; i < STARS; i++) {
     stars.push(new Star());
   }
+  mX = mouseX;
+  mY = mouseY;
 }
 
 /**Paint health and make sure the players ship is always on top */
 function draw() {
+  mX = mouseX;
+  mY = mouseY;
   let myShip;
   let myTcolor;
   background(200);
@@ -301,27 +313,15 @@ function drawItems() {
 }
 
 function keyDown() {
-  if (keyIsDown(LEFT_ARROW)) {
-    socket.emit("rotatingR", true);
-  } else {
-    socket.emit("rotatingR", false);
-  }
-  if (keyIsDown(RIGHT_ARROW)) {
-    socket.emit("rotatingL", true);
-  } else {
-    socket.emit("rotatingL", false);
-  }
-  if (keyIsDown(UP_ARROW)) {
+  if (keyIsDown(87)) {
     socket.emit("thrusting", true);
   } else {
     socket.emit("thrusting", false);
   }
 }
 
-function keyPressed() {
-  if (keyCode === 32) {
-    socket.emit("shooting", true);
-  }
+function mouseClicked() {
+  socket.emit("shooting", true);
 }
 
 /** LATENCY CLIENTSIDE**/
