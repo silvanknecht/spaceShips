@@ -4,7 +4,7 @@ const config = require("config");
 const logger = require('../middleware/logger');
 
 module.exports = function() {
-  const db = config.get("db");
+  const db = config.get("gameDb");
   var str = db;
   str = str.replace(/\/\/.*@/, "//***:***@"); // replace credentials with stars
   mongoose
