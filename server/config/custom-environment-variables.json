@@ -13,5 +13,6 @@
       "clientId": "auth_githubClientId",
       "clientSecret": "auth_githubClientSecret"
     }
-  }
+  },
+  "gameDb": "spaceShips_gameDb"
 }
