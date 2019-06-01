@@ -163,6 +163,7 @@ module.exports = function(io) {
             ) {
               if (p.ship.checkForHit(p1.ship.lasers)) {
                 t.tickets--;
+                io.emit("killFeed", { killer: p1, corps: p });
                 p.ship.isDead = true;
                 p.stats.deaths++;
                 p1.stats.kills++;

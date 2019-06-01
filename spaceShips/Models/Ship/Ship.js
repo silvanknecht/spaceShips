@@ -20,7 +20,7 @@ class Ship {
       x: 0, // pixel per second
       y: 0 // pixel per second
     };
-    this.speedcap = 5;
+    this.speedcap = 10;
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
     this.ammo = 100;

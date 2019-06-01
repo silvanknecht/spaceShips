@@ -6,8 +6,9 @@ let width;
 let height;
 let diffy = 0;
 let diffx = 0;
-let mX = 0;
-let mY = 0;
+let mX = 0; // mouseX
+let mY = 0; // mouseY
+let killFeed = [];
 
 const MINIMAPTOBOARDER = 10;
 const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
@@ -61,13 +62,11 @@ socket.on("disconnect", function() {
 socket.on("update", data => {
   teams = data.teams;
   items = data.items;
-  console.log("Teams: ", teams);
+  //console.log("Teams: ", teams);
 
-
-    let x = mX - WIDTH / 2;
-    let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
-    socket.emit("turn", Math.atan2(y, x) * -1);
-  
+  let x = mX - WIDTH / 2;
+  let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
+  socket.emit("turn", Math.atan2(y, x) * -1);
 });
 
 // TODO: change to switch case
@@ -88,6 +87,13 @@ socket.on("gameEnd", data => {
 
 socket.on("serverTime", data => {
   time = data;
+});
+
+socket.on("killFeed", data => {
+  if (killFeed.length > 1) {
+    killFeed.splice(0, 1);
+  }
+  killFeed.push(data);
 });
 
 function setup() {
@@ -128,9 +134,9 @@ function draw() {
 
   // MINIMAP BACKGROUND
   push();
-  translate(0 + MINIMAPTOBOARDER, HEIGHT - 180 - MINIMAPTOBOARDER);
+  translate(0 + MINIMAPTOBOARDER, HEIGHT - 202.5 - MINIMAPTOBOARDER);
   fill(150);
-  rect(0, 0, 360, 180);
+  rect(0, 0, 360, 202.5);
   pop();
 
   // SHIPS
@@ -191,6 +197,21 @@ function draw() {
     drawTickets();
     if (time !== undefined) {
       drawTime();
+    }
+
+    let s = 0;
+    for (let i = killFeed.length - 1; i >= 0; i--) {
+      push();
+      textAlign(RIGHT);
+      fill(255);
+      textSize(16);
+      text(
+        killFeed[i].killer.name + " => " + killFeed[i].corps.name,
+        WIDTH - 20,
+        SCOREBOARD_HIGHT + 20 + 16 * s
+      );
+      s++;
+      pop();
     }
   }
 }
@@ -268,14 +289,14 @@ function drawHealth(c) {
 
 function drawShipOnMinimap(ship, color) {
   push();
-  translate(0 + MINIMAPTOBOARDER, HEIGHT - 180 - MINIMAPTOBOARDER);
+  translate(0 + MINIMAPTOBOARDER, HEIGHT - 202.5 - MINIMAPTOBOARDER);
   let {
     position: { x },
     position: { y }
   } = ship;
 
   let xOnMinimap = map(x, 0, 4 * WIDTH, 0, 360);
-  let yOnMinimap = map(y, 0, 4 * HEIGHT, 0, 180);
+  let yOnMinimap = map(y, 0, 4 * HEIGHT, 0, 202.5);
 
   fill(color);
   ellipse(xOnMinimap, yOnMinimap, 10);

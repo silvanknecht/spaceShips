@@ -14,5 +14,5 @@
       "clientSecret": "dev_Env"
     }
   },
-  "db": "mongodb://localhost/SpaceShips"
+  "gameDb": "mongodb://localhost/SpaceShips"
 }
