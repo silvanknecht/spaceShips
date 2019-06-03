@@ -29,7 +29,6 @@ class Laser {
 
   update() {
     this.move();
-    this.checkForLeftScreen();
   }
 
   move() {
@@ -39,29 +38,28 @@ class Laser {
       this.position.x1 < this.spapwnPos.x1 - this.maxDist ||
       this.position.y1 > this.spapwnPos.y1 + this.maxDist ||
       this.position.y1 < this.spapwnPos.y1 - this.maxDist
-    ){
+    ) {
       this.needsDelete = true;
+    } else {
+      // check if laser has left screen
+      if (
+        this.position.x1 > WIDTH ||
+        this.position.x1 < 0 ||
+        this.position.x2 > WIDTH ||
+        this.position.x2 < 0 ||
+        this.position.y1 > HEIGHT ||
+        this.position.y1 < 0 ||
+        this.position.y2 > HEIGHT ||
+        this.position.y2 < 0
+      ) {
+        this.needsDelete = true;
+      }
     }
 
     this.position.x1 += (this.speed / FPS) * this.unitVector[0];
     this.position.y1 += (this.speed / FPS) * this.unitVector[1];
     this.position.x2 += (this.speed / FPS) * this.unitVector[0];
     this.position.y2 += (this.speed / FPS) * this.unitVector[1];
-  }
-
-  checkForLeftScreen() {
-    if (
-      this.position.x1 > WIDTH ||
-      this.position.x1 < 0 ||
-      this.position.x2 > WIDTH ||
-      this.position.x2 < 0 ||
-      this.position.y1 > HEIGHT ||
-      this.position.y1 < 0 ||
-      this.position.y2 > HEIGHT ||
-      this.position.y2 < 0
-    ) {
-      this.needsDelete = true;
-    }
   }
 }
 

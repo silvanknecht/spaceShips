@@ -6,8 +6,8 @@ const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
 
 // Width and Height in a resolution of 16:9
-global.HEIGHT = 4 * 1080;
-global.WIDTH = 4 * 1920;
+global.HEIGHT = 1080; //4*
+global.WIDTH = 1920; //4*
 global.SCOREBOARD_HEIGHT = 40;
 global.FPS = 60;
 global.FRICTION = 0.7;
@@ -18,7 +18,6 @@ const MAX_PLAYERS = 5;
 const GAMELENGTH = 60 * 10; //10 * 60; // in seconds
 global.TIME_DEAD = 3; // in seconds
 let currentTime = GAMELENGTH;
-
 
 // set up teams
 let teams = [];
@@ -98,7 +97,8 @@ module.exports = function(io) {
           let shipToUpdate = searchPlayerShip(client);
           if (shipToUpdate !== undefined) {
             if (bool) {
-              shipToUpdate.shoot();
+              let laserFired = shipToUpdate.shoot();
+              io.emit("laserFired", laserFired);
             }
           }
         });
@@ -164,7 +164,13 @@ module.exports = function(io) {
               p1.ship.isDead !== true && // can't be dead
               p.ship.isDead !== true
             ) {
-              if (p.ship.checkForHit(p1.ship.lasers)) {
+              let checkForHit = p.ship.checkForHit(p1.ship.lasers);
+              // send the laser that needs to be deleted to the client so the laser can be deleted clientside as well
+              if (checkForHit.laser !== undefined) {
+                io.emit("laserToDelete", checkForHit.laser);
+              }
+
+              if (checkForHit.died) {
                 t.tickets--;
                 io.emit("killFeed", { killer: p1, corps: p });
                 p.ship.isDead = true;
@@ -196,6 +202,7 @@ module.exports = function(io) {
   const Shield = require("./Models/Item/Shield");
   global.items = [];
 
+  //  every ** seconds add a shield to playfield
   setInterval(() => {
     if (items.length < MAX_PLAYERS) {
       let newItem = new Shield();

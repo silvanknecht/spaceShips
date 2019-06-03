@@ -59,7 +59,7 @@ class Ship {
     this.pickUpItem();
   }
 
-  // returns true if dead
+  // returns true and the killing laser if dead
   checkForHit(lasers) {
     //delete lasers with needsDelete = true;
     this.deleteLasers();
@@ -111,16 +111,17 @@ class Ship {
 
           if (this.health <= 0) {
             this.isDead = true;
-            return true;
+            l.needsDelete = true;
+            return { died: true, laser: l };
           }
           l.needsDelete = true;
-          break;
+          return { died: false, laser: l };
         } else {
           //console.log("not hit");
         }
       }
     }
-    return false;
+    return { died: false };
   }
 
   move() {
@@ -166,7 +167,9 @@ class Ship {
   }
 
   shoot() {
-    this.lasers.push(new Laser(this.corners.x1, this.corners.y1, this.angle));
+    let laser = new Laser(this.corners.x1, this.corners.y1, this.angle);
+    this.lasers.push(laser);
+    return laser;
   }
 
   deleteLasers() {

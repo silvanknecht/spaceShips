@@ -9,6 +9,7 @@ let diffx = 0;
 let mX = 0; // mouseX
 let mY = 0; // mouseY
 let killFeed = [];
+let lasers = [];
 
 const MINIMAPTOBOARDER = 10;
 const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
@@ -67,6 +68,22 @@ socket.on("update", data => {
   let x = mX - WIDTH / 2;
   let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
   socket.emit("turn", Math.atan2(y, x) * -1);
+});
+
+socket.on("laserFired", laser => {
+  console.log(lasers);
+  console.log(laser);
+  lasers.push(laser);
+});
+
+socket.on("laserToDelete", laser => {
+  // the laser is already updated on servers side so it needs to be changed back
+  laser.needsDelete = false;
+  for (let l of lasers) {
+    if (JSON.stringify(l) === JSON.stringify(laser)) {
+      l.needsDelete = true;
+    }
+  }
 });
 
 // TODO: change to switch case
@@ -139,6 +156,12 @@ function draw() {
   rect(0, 0, 360, 202.5);
   pop();
 
+  for (let l of lasers) {
+    drawLaser(l);
+    moveLaser(l);
+    deleteLaser(l);
+  }
+
   // SHIPS
   if (teams !== undefined) {
     for (let t of teams) {
@@ -148,7 +171,7 @@ function draw() {
             // bc when a player joins the ship can be undefined in the beginning
             if (!p.ship.isDead) {
               for (let l of p.ship.lasers) {
-                drawLaser(l);
+                //drawLaser(l);
               }
 
               if (p.id === socket.id) {
@@ -343,6 +366,46 @@ function keyDown() {
 
 function mouseClicked() {
   socket.emit("shooting", true);
+}
+
+/** LASERS */
+function deleteLaser() {
+  for (let i = lasers.length - 1; i >= 0; i--) {
+    if (lasers[i].needsDelete) {
+      lasers.splice(i, 1);
+    }
+  }
+}
+
+function moveLaser(laser) {
+  // check if laser has traveled max distance
+  if (
+    laser.position.x1 > laser.spapwnPos.x1 + laser.maxDist ||
+    laser.position.x1 < laser.spapwnPos.x1 - laser.maxDist ||
+    laser.position.y1 > laser.spapwnPos.y1 + laser.maxDist ||
+    laser.position.y1 < laser.spapwnPos.y1 - laser.maxDist
+  ) {
+    laser.needsDelete = true;
+  } else {
+    // check if laser has left screen
+    if (
+      laser.position.x1 > FIELDCOUNT * WIDTH ||
+      laser.position.x1 < 0 ||
+      laser.position.x2 > FIELDCOUNT * WIDTH ||
+      laser.position.x2 < 0 ||
+      laser.position.y1 > FIELDCOUNT * HEIGHT ||
+      laser.position.y1 < 0 ||
+      laser.position.y2 > FIELDCOUNT * HEIGHT ||
+      laser.position.y2 < 0
+    ) {
+      laser.needsDelete = true;
+    }
+  }
+
+  laser.position.x1 += (laser.speed / FPS) * laser.unitVector[0];
+  laser.position.y1 += (laser.speed / FPS) * laser.unitVector[1];
+  laser.position.x2 += (laser.speed / FPS) * laser.unitVector[0];
+  laser.position.y2 += (laser.speed / FPS) * laser.unitVector[1];
 }
 
 /** LATENCY CLIENTSIDE**/
