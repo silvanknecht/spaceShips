@@ -6,7 +6,7 @@ class Player {
   constructor(id, userId) {
     this.id = id;
     this.ship;
-    this.name = "Anonymous";
+    this.name = "Anonymous" + Math.random().toFixed(3);
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
     this.userId = userId;
@@ -37,6 +37,7 @@ class Player {
 
     switch (hexString) {
       case "5cc5de13b03b9f3584348a69":
+      //TODO: fetch size, health, etc, from database
         this.ship = new Fighter(teamId);
         break;
     }

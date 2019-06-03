@@ -5,6 +5,7 @@ const logger = require("../server/middleware/logger");
 const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
 
+// Width and Height in a resolution of 16:9
 global.HEIGHT = 4 * 1080;
 global.WIDTH = 4 * 1920;
 global.SCOREBOARD_HEIGHT = 40;
@@ -18,6 +19,8 @@ const GAMELENGTH = 60 * 10; //10 * 60; // in seconds
 global.TIME_DEAD = 3; // in seconds
 let currentTime = GAMELENGTH;
 
+
+// set up teams
 let teams = [];
 let team1 = new Team(0, "yellow", "#ffff00");
 teams.push(team1);
