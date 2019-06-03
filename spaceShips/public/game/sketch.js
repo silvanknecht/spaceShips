@@ -71,8 +71,22 @@ socket.on("update", data => {
 });
 
 socket.on("laserFired", laser => {
-  console.log(lasers);
-  console.log(laser);
+  if (myShip !== undefined) {
+    let longestDistance = 2000;
+    let diff = Math.sqrt(
+      (laser.position.x1 - myShip.position.x) ** 2 +
+        (laser.position.y1 - myShip.position.y) ** 2
+    );
+    let volume = map(diff, 0, longestDistance, 1, 0);
+    if (volume < 0) {
+      volume = 0;
+    }
+
+    push();
+    laserSound.setVolume(volume);
+    laserSound.play();
+    pop();
+  }
   lasers.push(laser);
 });
 
@@ -113,7 +127,9 @@ socket.on("killFeed", data => {
   killFeed.push(data);
 });
 
+let laserSound;
 function setup() {
+  laserSound = loadSound("/sounds/laser.mp3");
   frameRate(FPS);
   angleMode(DEGREES);
   createCanvas(WIDTH, HEIGHT);
@@ -124,12 +140,13 @@ function setup() {
   mX = mouseX;
   mY = mouseY;
 }
+let myShip;
 
 /**Paint health and make sure the players ship is always on top */
 function draw() {
   mX = mouseX;
   mY = mouseY;
-  let myShip;
+  myShip = undefined; // with out this the game brakes
   let myTcolor;
   background(200);
   push();
@@ -318,8 +335,8 @@ function drawShipOnMinimap(ship, color) {
     position: { y }
   } = ship;
 
-  let xOnMinimap = map(x, 0, 4 * WIDTH, 0, 360);
-  let yOnMinimap = map(y, 0, 4 * HEIGHT, 0, 202.5);
+  let xOnMinimap = map(x, 0, FIELDCOUNT * WIDTH, 0, 360);
+  let yOnMinimap = map(y, 0, FIELDCOUNT * HEIGHT, 0, 202.5);
 
   fill(color);
   ellipse(xOnMinimap, yOnMinimap, 10);
