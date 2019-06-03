@@ -12,7 +12,7 @@ let killFeed = [];
 let lasers = [];
 
 const MINIMAPTOBOARDER = 10;
-const FIELDCOUNT = 4; // the battlefield consists of 4 1920x1080 sized rectangles
+const FIELDCOUNT = 2; // the battlefield consists of 4 1920x1080 sized rectangles
 const SCOREBOARD_HIGHT = 40;
 const CANVASHIGHT = 1040;
 const HEIGHT = CANVASHIGHT + SCOREBOARD_HIGHT;
@@ -77,7 +77,7 @@ socket.on("laserFired", laser => {
       (laser.position.x1 - myShip.position.x) ** 2 +
         (laser.position.y1 - myShip.position.y) ** 2
     );
-    let volume = map(diff, 0, longestDistance, 1, 0);
+    let volume = map(diff, 0, longestDistance, 0.5, 0);
     if (volume < 0) {
       volume = 0;
     }
@@ -121,7 +121,7 @@ socket.on("serverTime", data => {
 });
 
 socket.on("killFeed", data => {
-  if (killFeed.length > 1) {
+  if (killFeed.length > 4) {
     killFeed.splice(0, 1);
   }
   killFeed.push(data);

@@ -6,8 +6,8 @@ const Player = require("./Models/Player/Player");
 const Team = require("./Models/Team/Team");
 
 // Width and Height in a resolution of 16:9
-global.HEIGHT = 4 * 1080; //4*
-global.WIDTH = 4 * 1920; //4*
+global.HEIGHT = 2 * 1080; //4*
+global.WIDTH = 2 * 1920; //4*
 global.SCOREBOARD_HEIGHT = 40;
 global.FPS = 60;
 global.FRICTION = 0.7;
