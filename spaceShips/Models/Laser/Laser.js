@@ -1,6 +1,9 @@
 class Laser {
-  constructor(x1, y1, shipAngle) {
-    this.speed = 1200; // Pixels per second //changed from 1200
+  constructor(x1, y1, shipAngle, thrust) {
+    this.speed = {
+      x: 1200,
+      y: 1200
+    }; // Pixels per second //changed from 1200
     this.dmg = 10;
     this.length = 15;
     this.maxDist = 1000; // Distance in pixle
@@ -56,10 +59,10 @@ class Laser {
       }
     }
 
-    this.position.x1 += (this.speed / FPS) * this.unitVector[0];
-    this.position.y1 += (this.speed / FPS) * this.unitVector[1];
-    this.position.x2 += (this.speed / FPS) * this.unitVector[0];
-    this.position.y2 += (this.speed / FPS) * this.unitVector[1];
+    this.position.x1 += (this.speed.x / FPS) * this.unitVector[0];
+    this.position.y1 += (this.speed.y / FPS) * this.unitVector[1];
+    this.position.x2 += (this.speed.x / FPS) * this.unitVector[0];
+    this.position.y2 += (this.speed.y / FPS) * this.unitVector[1];
   }
 }
 

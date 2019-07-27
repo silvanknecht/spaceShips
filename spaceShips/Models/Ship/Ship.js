@@ -125,26 +125,36 @@ class Ship {
   }
 
   move() {
+    let thrustXY = Math.sqrt(this.thrust.x ** 2 + this.thrust.y ** 2);
+    let thrustXNow = this.thrust.x;
+    let thrustYNow = this.thrust.y;
+
+    console.log(thrustXNow);
+    console.log(thrustYNow);
+
     if (this.thrusting) {
       this.thrust.x += (this.shipThrust * Math.cos(this.angle)) / FPS;
       this.thrust.y -= (this.shipThrust * Math.sin(this.angle)) / FPS;
 
-      if (this.thrust.x > this.speedcap) {
-        this.thrust.x = this.speedcap;
-      } else if (this.thrust.x < -this.speedcap) {
-        this.thrust.x = -this.speedcap;
-      }
-      if (this.thrust.y > this.speedcap) {
-        this.thrust.y = this.speedcap;
-      } else if (this.thrust.y < -this.speedcap) {
-        this.thrust.y = -this.speedcap;
-      }
+      if (thrustXY > this.speedcap) {
+        this.thrust.x = thrustXNow;
+        this.thrust.y = thrustYNow;
+       } //else if (this.thrust.x < -this.speedcap) {
+      //   this.thrust.x = -this.speedcap;
+      // }
+      // if (this.thrust.y > this.speedcap) {
+      //   this.thrust.y = this.speedcap;
+      // } else if (this.thrust.y < -this.speedcap) {
+      //   this.thrust.y = -this.speedcap;
+      // }
     } else {
       this.thrust.x -= (FRICTION * this.thrust.x) / FPS;
       this.thrust.y -= (FRICTION * this.thrust.y) / FPS;
     }
     this.position.x += this.thrust.x;
     this.position.y += this.thrust.y;
+
+  
   }
 
   turn() {
@@ -167,7 +177,12 @@ class Ship {
   }
 
   shoot() {
-    let laser = new Laser(this.corners.x1, this.corners.y1, this.angle);
+    let laser = new Laser(
+      this.corners.x1,
+      this.corners.y1,
+      this.angle,
+      this.thrust
+    );
     this.lasers.push(laser);
     return laser;
   }
