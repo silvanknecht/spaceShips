@@ -70,7 +70,9 @@ socket.on("update", data => {
   socket.emit("turn", Math.atan2(y, x) * -1);
 });
 
-socket.on("laserFired", laser => {
+socket.on("laserFired", data => {
+  let { laser, reloading } = data;
+  if (reloading) return;
   if (myShip !== undefined) {
     let longestDistance = 2000;
     let diff = Math.sqrt(

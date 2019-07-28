@@ -16,14 +16,16 @@ class Ship {
     this.angle = this.gitveTeamAngle(teamId); // rad
     this.shipThrust = 10;
     this.thrusting = false;
-    this.thrust = {
+    this.velocity = {
       x: 0, // pixel per second
       y: 0 // pixel per second
     };
     this.speedcap = 10;
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
-    this.ammo = 100;
+    this.ammo = 10;
+    this.reloadingTime = 2000;
+    this.reloading = false;
     this.lasers = [];
     this.shield = { hitpoints: 0 };
   }
@@ -125,36 +127,24 @@ class Ship {
   }
 
   move() {
-    let thrustXY = Math.sqrt(this.thrust.x ** 2 + this.thrust.y ** 2);
-    let thrustXNow = this.thrust.x;
-    let thrustYNow = this.thrust.y;
-
-    console.log(thrustXNow);
-    console.log(thrustYNow);
+    let thrustXY = Math.sqrt(this.velocity.x ** 2 + this.velocity.y ** 2);
+    let thrustXNow = this.velocity.x;
+    let thrustYNow = this.velocity.y;
 
     if (this.thrusting) {
-      this.thrust.x += (this.shipThrust * Math.cos(this.angle)) / FPS;
-      this.thrust.y -= (this.shipThrust * Math.sin(this.angle)) / FPS;
+      this.velocity.x += (this.shipThrust * Math.cos(this.angle)) / FPS;
+      this.velocity.y -= (this.shipThrust * Math.sin(this.angle)) / FPS;
 
       if (thrustXY > this.speedcap) {
-        this.thrust.x = thrustXNow;
-        this.thrust.y = thrustYNow;
-       } //else if (this.thrust.x < -this.speedcap) {
-      //   this.thrust.x = -this.speedcap;
-      // }
-      // if (this.thrust.y > this.speedcap) {
-      //   this.thrust.y = this.speedcap;
-      // } else if (this.thrust.y < -this.speedcap) {
-      //   this.thrust.y = -this.speedcap;
-      // }
+        this.velocity.x = thrustXNow;
+        this.velocity.y = thrustYNow;
+      }
     } else {
-      this.thrust.x -= (FRICTION * this.thrust.x) / FPS;
-      this.thrust.y -= (FRICTION * this.thrust.y) / FPS;
+      this.velocity.x -= (FRICTION * this.velocity.x) / FPS;
+      this.velocity.y -= (FRICTION * this.velocity.y) / FPS;
     }
-    this.position.x += this.thrust.x;
-    this.position.y += this.thrust.y;
-
-  
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
   }
 
   turn() {
@@ -181,10 +171,22 @@ class Ship {
       this.corners.x1,
       this.corners.y1,
       this.angle,
-      this.thrust
+      this.velocity
     );
-    this.lasers.push(laser);
-    return laser;
+    if (this.ammo > 0) {
+      this.lasers.push(laser);
+      this.ammo--;
+    } else {
+      if (!this.reloading) {
+        this.reloading = true;
+        setTimeout(() => {
+          this.ammo = 10;
+          this.reloading = false;
+        }, this.reloadingTime);
+      }
+    }
+    console.log(this.ammo);
+    return { laser, reloading: this.reloading };
   }
 
   deleteLasers() {
@@ -255,7 +257,7 @@ class Ship {
     this.angle = this.gitveTeamAngle(this.teamId); // rad
     this.shipThrust = 10;
     this.thrusting = false;
-    this.thrust = {
+    this.velocity = {
       x: 0, // pixel per second
       y: 0 // pixel per second
     };
