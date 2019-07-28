@@ -1,5 +1,4 @@
-const url = "http://localhost:5000/";
-//const url = "https://realspaceships.herokuapp.com/"
+const url = window.location.origin + "/";
 
 let localStorage;
 let me;
@@ -14,4 +13,3 @@ if (jwtToken || window.location.href === url) {
 } else {
   window.location.replace(url);
 }
-
