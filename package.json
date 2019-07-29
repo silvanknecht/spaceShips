@@ -5,7 +5,7 @@
   "main": "./server/app.js",
   "scripts": {
     "test": "jest --watchAll --verbose --env=node --runInBand --coverage",
-"start": "node ./server/app.js"
+    "start": "node ./server/app.js"
   },
   "repository": {
     "type": "git",

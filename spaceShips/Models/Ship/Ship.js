@@ -3,11 +3,12 @@ const Laser = require("../Laser/Laser");
 const collide = require("triangle-circle-collision");
 
 class Ship {
-  constructor(teamId) {
+  constructor(teamId, userId) {
     if (new.target === Ship) {
       throw new TypeError("Cannot construct Abstract instances directly");
     }
     this.teamId = teamId;
+    this.userId = userId;
     this.name = Math.random();
     this.color = getRandomColor();
     this.health = 100;
@@ -23,18 +24,13 @@ class Ship {
     this.speedcap = 10;
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
-    this.ammo = 10;
+    this.ammo = 15;
     this.reloadingTime = 2000;
     this.reloading = false;
-    this.lasers = [];
     this.shield = { hitpoints: 0 };
   }
 
   update() {
-    // move lasers
-    for (let l of this.lasers) {
-      l.update();
-    }
     // hudge performance loss without if statements
     // check if boarder is left
     if (
@@ -57,15 +53,11 @@ class Ship {
     }
     this.move();
     this.turn();
-    this.deleteLasers();
     this.pickUpItem();
   }
 
   // returns true and the killing laser if dead
   checkForHit(lasers) {
-    //delete lasers with needsDelete = true;
-    this.deleteLasers();
-
     // check if hit triangle point collision
     let areaOrig = Math.abs(
       (this.corners.x2 - this.corners.x1) *
@@ -171,10 +163,11 @@ class Ship {
       this.corners.x1,
       this.corners.y1,
       this.angle,
-      this.velocity
+      this.userId,
+      this.teamId
     );
     if (this.ammo > 0) {
-      this.lasers.push(laser);
+      projectiles[this.teamId].lasers.push(laser);
       this.ammo--;
     } else {
       if (!this.reloading) {
@@ -187,14 +180,6 @@ class Ship {
     }
     console.log(this.ammo);
     return { laser, reloading: this.reloading };
-  }
-
-  deleteLasers() {
-    for (let i = this.lasers.length - 1; i >= 0; i--) {
-      if (this.lasers[i].needsDelete) {
-        this.lasers.splice(i, 1);
-      }
-    }
   }
 
   giveTeamPosition(teamId) {

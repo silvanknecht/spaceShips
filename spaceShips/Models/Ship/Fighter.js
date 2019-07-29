@@ -1,8 +1,8 @@
 const Ship = require("./Ship");
 
 class Fighter extends Ship {
-  constructor(teamId) {
-    super(teamId);
+  constructor(teamId, userId) {
+    super(teamId, userId);
     this.type = "Triangle";
     this.corners = {
       x1: this.x,
@@ -13,8 +13,6 @@ class Fighter extends Ship {
       y3: this.y + this.size / 2
     };
   }
-
-
 }
 
 module.exports = Fighter;

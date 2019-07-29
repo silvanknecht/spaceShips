@@ -26,6 +26,19 @@ teams.push(team1);
 let team2 = new Team(1, "puple", "#FF00FF");
 teams.push(team2);
 
+// lasers
+global.projectiles = [{ lasers: [] }, { lasers: [] }];
+
+function deleteLasers() {
+  for (let p of projectiles) {
+    for (let i = p.lasers.length - 1; i >= 0; i--) {
+      if (p.lasers[i].needsDelete) {
+        p.lasers.splice(i, 1);
+      }
+    }
+  }
+}
+
 module.exports = function(io) {
   io.on("connection", client => {
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
@@ -133,6 +146,14 @@ module.exports = function(io) {
   }
 
   setInterval(function() {
+    deleteLasers();
+    // move lasers
+    for (let p of projectiles) {
+      for (let l of p.lasers) {
+        l.update();
+      }
+    }
+
     for (let t of teams) {
       for (let p of t.players) {
         if (p.ship !== undefined) {
@@ -152,39 +173,45 @@ module.exports = function(io) {
     io.emit("update", prepareDataToSend());
 
     //** Collision detection */
+
     for (let t of teams) {
       for (let p of t.players) {
         if (p.ship === undefined) break;
-        for (let t1 of teams) {
-          for (let p1 of t1.players) {
-            if (p1.ship === undefined) break;
-            if (
-              p !== p1 && // can't hit himself
-              t.id !== t1.id && // can't be in the same team
-              p1.ship.isDead !== true && // can't be dead
-              p.ship.isDead !== true
-            ) {
-              let checkForHit = p.ship.checkForHit(p1.ship.lasers);
-              // send the laser that needs to be deleted to the client so the laser can be deleted clientside as well
-              if (checkForHit.laser !== undefined) {
-                io.emit("laserToDelete", checkForHit.laser);
-              }
+        if (p.ship.isDead !== true) {
+          let checkForHit;
+          switch (p.ship.teamId) {
+            case 0:
+              checkForHit = p.ship.checkForHit(projectiles[1].lasers);
+              break;
+            case 1:
+              checkForHit = p.ship.checkForHit(projectiles[0].lasers);
+              break;
+          }
+          // send the laser that needs to be deleted to the client so the laser can be deleted clientside as well
+          if (checkForHit.laser !== undefined) {
+            io.emit("laserToDelete", checkForHit.laser);
+            console.log(checkForHit.laser);
+          }
 
-              if (checkForHit.died) {
-                t.tickets--;
-                io.emit("killFeed", { killer: p1, corps: p });
-                p.ship.isDead = true;
-                p.stats.deaths++;
-                p1.stats.kills++;
-                if (t.tickets === 0) {
-                  gameFinished(t1);
-                }
+          if (checkForHit.died) {
+            t.tickets--;
+
+            p.ship.isDead = true;
+            p.stats.deaths++;
+            for (let killer of teams[checkForHit.laser.teamId].players) {
+              if (killer.userId === checkForHit.laser.userId) {
+                killer.stats.kills++;
+                io.emit("killFeed", { killer, corps: p });
               }
+            }
+            if (t.tickets === 0) {
+              gameFinished(t1);
             }
           }
         }
       }
     }
+    deleteLasers();
   }, 1000 / FPS);
 
   /** GAMETIME */

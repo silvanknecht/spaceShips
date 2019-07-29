@@ -1,5 +1,7 @@
 class Laser {
-  constructor(x1, y1, shipAngle, thrust) {
+  constructor(x1, y1, shipAngle, userId, teamId) {
+    this.teamId = teamId;
+    this.userId = userId;
     this.speed = {
       x: 1200,
       y: 1200

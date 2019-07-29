@@ -189,10 +189,6 @@ function draw() {
           if (p.ship !== undefined) {
             // bc when a player joins the ship can be undefined in the beginning
             if (!p.ship.isDead) {
-              for (let l of p.ship.lasers) {
-                //drawLaser(l);
-              }
-
               if (p.id === socket.id) {
                 myShip = p.ship;
                 myTcolor = t.color;
