@@ -25,6 +25,9 @@ let stars = [];
 const STARS = 1 * 500; //TODO: performance loss if to many stars... maybe static (gif) background!
 
 window.onload = function() {
+  fetch("crosshairs/cursor1.cur", function() {
+    // Do other processing here
+  });
   canvas = document.getElementsByTagName("canvas")[0];
   resizeCanv();
 };
@@ -72,6 +75,7 @@ socket.on("update", data => {
 
 socket.on("laserFired", data => {
   let { laser, reloading } = data;
+
   if (reloading) return;
   if (myShip !== undefined) {
     let longestDistance = 2000;
@@ -92,7 +96,18 @@ socket.on("laserFired", data => {
   lasers.push(laser);
 });
 
-socket.on("laserToDelete", laser => {
+socket.on("laserHit_laserToDelete", laser => {
+  // if it was your laser flash hitmarker
+  if (myShip !== undefined) {
+    if (laser.userId === myShip.userId && !myShip.reloading) {
+      console.log("yey");
+      canvas.style.cursor = "url('crosshairs/cursor1.cur') 16 16,auto";
+      setTimeout(() => {
+        canvas.style.cursor = "url('crosshairs/cursor2.cur') 16 16,auto";
+      }, 50);
+    }
+  }
+
   // the laser is already updated on servers side so it needs to be changed back
   laser.needsDelete = false;
   for (let l of lasers) {

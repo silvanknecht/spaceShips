@@ -189,8 +189,8 @@ module.exports = function(io) {
           }
           // send the laser that needs to be deleted to the client so the laser can be deleted clientside as well
           if (checkForHit.laser !== undefined) {
-            io.emit("laserToDelete", checkForHit.laser);
-            console.log(checkForHit.laser);
+            io.emit("laserHit_laserToDelete", checkForHit.laser);
+            //console.log(checkForHit.laser);
           }
 
           if (checkForHit.died) {
