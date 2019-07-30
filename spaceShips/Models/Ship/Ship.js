@@ -109,7 +109,7 @@ class Ship {
             return { died: true, laser: l };
           }
           l.needsDelete = true;
-          return { died: false, laser: l };
+          return { hit: this.userId, died: false, laser: l };
         } else {
           //console.log("not hit");
         }

@@ -9,7 +9,9 @@ let diffx = 0;
 let mX = 0; // mouseX
 let mY = 0; // mouseY
 let killFeed = [];
+let minimapContent = [];
 let lasers = [];
+let gotHit = false;
 
 const MINIMAPTOBOARDER = 10;
 const FIELDCOUNT = 2; // the battlefield consists of 4 1920x1080 sized rectangles
@@ -51,6 +53,10 @@ function resizeCanv() {
 }
 let socket = io(url, {
   transports: ["websocket"],
+  reconnection: true,
+  reconnectionDelay: 1000,
+  reconnectionDelayMax: 5000,
+  reconnectionAttempts: Infinity,
   upgrade: false
 });
 socket.on("connect", function() {
@@ -59,8 +65,8 @@ socket.on("connect", function() {
 });
 
 socket.on("disconnect", function() {
-  socket.removeAllListeners();
-  socket.close();
+  console.log("disconnected from server");
+  //window.setTimeout("app.connect()", 5000);
 });
 
 socket.on("update", data => {
@@ -100,7 +106,6 @@ socket.on("laserHit_laserToDelete", laser => {
   // if it was your laser flash hitmarker
   if (myShip !== undefined) {
     if (laser.userId === myShip.userId && !myShip.reloading) {
-      console.log("yey");
       canvas.style.cursor = "url('crosshairs/cursor1.cur') 16 16,auto";
       setTimeout(() => {
         canvas.style.cursor = "url('crosshairs/cursor2.cur') 16 16,auto";
@@ -144,6 +149,18 @@ socket.on("killFeed", data => {
   killFeed.push(data);
 });
 
+socket.on("gotHit", data => {
+  let { hit } = data;
+  if (myShip !== undefined) {
+    if (hit === myShip.userId) {
+      gotHit = true;
+      setTimeout(() => {
+        gotHit = false;
+      }, 100);
+    }
+  }
+});
+
 let laserSound;
 function setup() {
   laserSound = loadSound("/sounds/laser.mp3");
@@ -168,7 +185,11 @@ function draw() {
   background(200);
   push();
   translate(-diffx, SCOREBOARD_HIGHT - diffy);
-  fill(0);
+  if (gotHit) {
+    fill(150, 0, 0, 200);
+  } else {
+    fill(0);
+  }
   rect(0, 0, FIELDCOUNT * WIDTH, FIELDCOUNT * HEIGHT);
   pop();
   /** Background */
@@ -183,13 +204,6 @@ function draw() {
     drawItems();
   }
 
-  // MINIMAP BACKGROUND
-  push();
-  translate(0 + MINIMAPTOBOARDER, HEIGHT - 202.5 - MINIMAPTOBOARDER);
-  fill(150);
-  rect(0, 0, 360, 202.5);
-  pop();
-
   for (let l of lasers) {
     drawLaser(l);
     moveLaser(l);
@@ -197,6 +211,7 @@ function draw() {
   }
 
   // SHIPS
+  minimapContent = [];
   if (teams !== undefined) {
     for (let t of teams) {
       if (t.players.length > 0) {
@@ -210,7 +225,7 @@ function draw() {
               } else {
                 drawShip(p.ship, t.color);
 
-                drawShipOnMinimap(p.ship, t.color);
+                minimapContent.push({ ship: p.ship, color: t.color });
               }
 
               drawHealth(p);
@@ -237,7 +252,7 @@ function draw() {
           // }
 
           drawShip(myShip, myTcolor);
-          drawShipOnMinimap(myShip, "#32CD32"); // show myself greeen on the minimap
+          minimapContent.push({ ship: myShip, color: "#32CD32" }); // show myself greeen on the minimap
         }
       }
     }
@@ -267,6 +282,8 @@ function draw() {
       pop();
     }
   }
+
+  drawMinimap();
 }
 
 function drawShip(ship, tcolor) {
@@ -338,6 +355,20 @@ function drawHealth(c) {
     pop();
   }
   pop();
+}
+
+function drawMinimap() {
+  // MINIMAP BACKGROUND
+  push();
+  translate(0 + MINIMAPTOBOARDER, HEIGHT - 202.5 - MINIMAPTOBOARDER);
+  fill(150);
+  rect(0, 0, 360, 202.5);
+  pop();
+
+  for (let mc of minimapContent) {
+    let { ship, color } = mc;
+    drawShipOnMinimap(ship, color);
+  }
 }
 
 function drawShipOnMinimap(ship, color) {

@@ -207,6 +207,10 @@ module.exports = function(io) {
             if (t.tickets === 0) {
               gameFinished(t1);
             }
+          } else {
+            if (checkForHit.hit) {
+              io.emit("gotHit", { hit: checkForHit.hit });
+            }
           }
         }
       }
