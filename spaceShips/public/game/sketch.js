@@ -130,7 +130,7 @@ socket.on("newServer", nameSpace => {
     // the laser is already updated on servers side so it needs to be changed back
     laser.needsDelete = false;
     for (let l of lasers) {
-      if (JSON.stringify(l) === JSON.stringify(laser)) {
+      if (l.id === laser.id) {
         l.needsDelete = true;
       }
     }
