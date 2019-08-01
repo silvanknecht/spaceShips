@@ -13,7 +13,7 @@ class Item {
     };
   }
 
-  pickedUp() {
+  pickedUp(items) {
     let i = items.indexOf(this);
     items.splice(i, 1);
   }

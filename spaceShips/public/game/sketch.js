@@ -56,12 +56,12 @@ let socket = io(url, {
   reconnection: true,
   reconnectionDelay: 1000,
   reconnectionDelayMax: 5000,
-  reconnectionAttempts: Infinity,
-  upgrade: false
+  reconnectionAttempts: Infinity
 });
+
 socket.on("connect", function() {
+  socket.emit("authenticate", jwtToken);
   console.log("Connected to Server!");
-  socket.emit("registerForGame", jwtToken);
 });
 
 socket.on("disconnect", function() {
@@ -69,96 +69,124 @@ socket.on("disconnect", function() {
   //window.setTimeout("app.connect()", 5000);
 });
 
-socket.on("update", data => {
-  teams = data.teams;
-  items = data.items;
-  //console.log("Teams: ", teams);
+socket.on("newServer", nameSpace => {
+  socket.close();
+  socket = io(url + nameSpace, {
+    transports: ["websocket"],
+    reconnection: true,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    reconnectionAttempts: Infinity
+  });
+  socket.on("connect", () => {
+    socket.emit("joinGame", jwtToken);
+    console.log("connected to game server!");
+  });
 
-  let x = mX - WIDTH / 2;
-  let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
-  socket.emit("turn", Math.atan2(y, x) * -1);
-});
+  socket.on("update", data => {
+    teams = data.teams;
+    items = data.items;
+    //console.log("Teams: ", teams);
 
-socket.on("laserFired", data => {
-  let { laser, reloading } = data;
+    let x = mX - WIDTH / 2;
+    let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
+    socket.emit("turn", Math.atan2(y, x) * -1);
+  });
 
-  if (reloading) return;
-  if (myShip !== undefined) {
-    let longestDistance = 2000;
-    let diff = Math.sqrt(
-      (laser.position.x1 - myShip.position.x) ** 2 +
-        (laser.position.y1 - myShip.position.y) ** 2
-    );
-    let volume = map(diff, 0, longestDistance, 0.5, 0);
-    if (volume < 0) {
-      volume = 0;
+  socket.on("laserFired", data => {
+    let { laser, reloading } = data;
+
+    if (reloading) return;
+    if (myShip !== undefined) {
+      let longestDistance = 2000;
+      let diff = Math.sqrt(
+        (laser.position.x1 - myShip.position.x) ** 2 +
+          (laser.position.y1 - myShip.position.y) ** 2
+      );
+      let volume = map(diff, 0, longestDistance, 0.5, 0);
+      if (volume < 0) {
+        volume = 0;
+      }
+
+      push();
+      laserSound.setVolume(volume);
+      laserSound.play();
+      pop();
+    }
+    lasers.push(laser);
+  });
+
+  socket.on("laserHit_laserToDelete", laser => {
+    // if it was your laser flash hitmarker
+    if (myShip !== undefined) {
+      if (laser.userId === myShip.userId && !myShip.reloading) {
+        canvas.style.cursor = "url('crosshairs/cursor1.cur') 16 16,auto";
+        setTimeout(() => {
+          canvas.style.cursor = "url('crosshairs/cursor2.cur') 16 16,auto";
+        }, 50);
+      }
     }
 
-    push();
-    laserSound.setVolume(volume);
-    laserSound.play();
-    pop();
-  }
-  lasers.push(laser);
-});
-
-socket.on("laserHit_laserToDelete", laser => {
-  // if it was your laser flash hitmarker
-  if (myShip !== undefined) {
-    if (laser.userId === myShip.userId && !myShip.reloading) {
-      canvas.style.cursor = "url('crosshairs/cursor1.cur') 16 16,auto";
-      setTimeout(() => {
-        canvas.style.cursor = "url('crosshairs/cursor2.cur') 16 16,auto";
-      }, 50);
+    // the laser is already updated on servers side so it needs to be changed back
+    laser.needsDelete = false;
+    for (let l of lasers) {
+      if (JSON.stringify(l) === JSON.stringify(laser)) {
+        l.needsDelete = true;
+      }
     }
-  }
+  });
 
-  // the laser is already updated on servers side so it needs to be changed back
-  laser.needsDelete = false;
-  for (let l of lasers) {
-    if (JSON.stringify(l) === JSON.stringify(laser)) {
-      l.needsDelete = true;
+  // TODO: change to switch case
+  socket.on("serverInfo", data => {
+    if (data === "serverFull") {
+      alert("Server already full, please try again later!");
+      window.location.href = url;
+    } else if (data === "existsAlready") {
+      alert("You're already in the game!");
+      window.location.href = url;
+    } else if (data === "tokenExpired") {
+      window.location.href = url;
     }
-  }
-});
+  });
 
-// TODO: change to switch case
-socket.on("serverInfo", data => {
-  if (data === "serverFull") {
-    alert("Server already full, please try again later!");
-  } else if (data === "existsAlready") {
-    alert("You're already in the game!");
-  } else if (data === "tokenExpired") {
-    window.location.href = url;
-  }
-});
+  socket.on("gameEnd", data => {
+    alert(data);
+    window.location.replace(url + "interface/index.html");
+  });
 
-socket.on("gameEnd", data => {
-  window.location.replace(url + "interface/index.html");
-  alert(data);
-});
+  socket.on("serverTime", data => {
+    time = data;
+  });
 
-socket.on("serverTime", data => {
-  time = data;
-});
-
-socket.on("killFeed", data => {
-  if (killFeed.length > 4) {
-    killFeed.splice(0, 1);
-  }
-  killFeed.push(data);
-});
-
-socket.on("gotHit", data => {
-  let { hit } = data;
-  if (myShip !== undefined) {
-    if (hit === myShip.userId) {
-      gotHit = true;
-      setTimeout(() => {
-        gotHit = false;
-      }, 100);
+  socket.on("killFeed", data => {
+    if (killFeed.length > 4) {
+      killFeed.splice(0, 1);
     }
-  }
+    killFeed.push(data);
+  });
+
+  socket.on("gotHit", data => {
+    let { hit } = data;
+    if (myShip !== undefined) {
+      if (hit === myShip.userId) {
+        gotHit = true;
+        setTimeout(() => {
+          gotHit = false;
+        }, 100);
+      }
+    }
+  });
+
+  socket.on("p0ng", function() {
+    latency = Date.now() - startTime;
+    console.log("Ping: ", latency);
+  });
+
+  setInterval(function() {
+    startTime = Date.now();
+    socket.emit("p1ng");
+    console.log("Ping sent!");
+  }, 1000);
 });
 
 let laserSound;
@@ -471,14 +499,3 @@ function moveLaser(laser) {
 
 /** LATENCY CLIENTSIDE**/
 var startTime;
-
-setInterval(function() {
-  startTime = Date.now();
-  socket.emit("p1ng");
-  console.log("Ping sent!");
-}, 1000);
-
-socket.on("p0ng", function() {
-  latency = Date.now() - startTime;
-  console.log("Ping: ", latency);
-});

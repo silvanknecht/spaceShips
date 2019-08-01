@@ -30,8 +30,8 @@ class Ship {
     this.shield = { hitpoints: 0 };
   }
 
-  update() {
-    // hudge performance loss without if statements
+  update(items) {
+       // hudge performance loss without if statements
     // check if boarder is left
     if (
       this.position.x < this.size + 5 ||
@@ -53,7 +53,7 @@ class Ship {
     }
     this.move();
     this.turn();
-    this.pickUpItem();
+    this.pickUpItem(items);
   }
 
   // returns true and the killing laser if dead
@@ -139,36 +139,17 @@ class Ship {
     this.position.y += this.velocity.y;
   }
 
-  turn() {
-    this.corners.x1 =
-      this.position.x + (4 / 3) * this.size * Math.cos(this.angle);
-    this.corners.y1 =
-      this.position.y - (4 / 3) * this.size * Math.sin(this.angle);
-    this.corners.x2 =
-      this.position.x -
-      this.size * ((2 / 3) * Math.cos(this.angle) + Math.sin(this.angle));
-    this.corners.y2 =
-      this.position.y +
-      this.size * ((2 / 3) * Math.sin(this.angle) - Math.cos(this.angle));
-    this.corners.x3 =
-      this.position.x -
-      this.size * ((2 / 3) * Math.cos(this.angle) - Math.sin(this.angle));
-    this.corners.y3 =
-      this.position.y +
-      this.size * ((2 / 3) * Math.sin(this.angle) + Math.cos(this.angle));
-  }
-
   shoot() {
-    let laser = new Laser(
-      this.corners.x1,
-      this.corners.y1,
-      this.angle,
-      this.userId,
-      this.teamId
-    );
     if (this.ammo > 0) {
-      projectiles[this.teamId].lasers.push(laser);
+      let laser = new Laser(
+        this.position.x,
+        this.position.y,
+        this.angle,
+        this.userId,
+        this.teamId
+      );
       this.ammo--;
+      return { laser, reloading: this.reloading };
     } else {
       if (!this.reloading) {
         this.reloading = true;
@@ -178,8 +159,7 @@ class Ship {
         }, this.reloadingTime);
       }
     }
-    console.log(this.ammo);
-    return { laser, reloading: this.reloading };
+    return { reloading: this.reloading };
   }
 
   giveTeamPosition(teamId) {
@@ -204,14 +184,13 @@ class Ship {
     switch (teamId) {
       case 0:
         return (1 / 180) * Math.PI;
-        break;
+
       case 1:
         return (180 / 180) * Math.PI;
-        break;
     }
   }
 
-  pickUpItem() {
+  pickUpItem(items) {
     if (items !== 0) {
       for (let [i, it] of items.entries()) {
         let collided = collide(
@@ -221,13 +200,13 @@ class Ship {
             [this.corners.x3, this.corners.y3]
           ],
           [it.position.x, it.position.y],
-          it.d / 2
+          it.d / 2 - 20
         );
         if (collided) {
           switch (it.name) {
             case "shield":
               this.shield = it;
-              it.pickedUp();
+              it.pickedUp(items);
               break;
           }
         }
@@ -237,10 +216,8 @@ class Ship {
 
   restore() {
     this.health = 100;
-    this.size = 14; // middle to corners
     this.position = this.giveTeamPosition(this.teamId);
     this.angle = this.gitveTeamAngle(this.teamId); // rad
-    this.shipThrust = 10;
     this.thrusting = false;
     this.velocity = {
       x: 0, // pixel per second
@@ -248,8 +225,6 @@ class Ship {
     };
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
-    this.ammo = 100;
-    this.lasers = [];
     this.shield = { hitpoints: 0 };
   }
 }
