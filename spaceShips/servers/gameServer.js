@@ -9,7 +9,7 @@ const Shield = require("../Models/Item/Shield");
 class GameServer {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 4;
+    this.MAX_PLAYERS = 10;
     this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
     this.currentTime = this.GAMELENGTH;
 
