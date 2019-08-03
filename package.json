@@ -18,21 +18,21 @@
   },
   "homepage": "https://github.com/silvanknecht/spaceShips#readme",
   "dependencies": {
-    "async": "^2.6.1",
+    "async": "^2.6.3",
     "bcryptjs": "^2.4.3",
     "compression": "^1.7.4",
-    "config": "^3.0.1",
-    "express": "^4.16.4",
+    "config": "^3.2.2",
+    "express": "^4.17.1",
     "express-async-errors": "^3.1.1",
     "express-promise-router": "^3.0.3",
     "http": "0.0.0",
     "joi": "^14.3.1",
     "joi-objectid": "^2.0.0",
     "jsonwebtoken": "^8.5.1",
-    "mongoose": "^5.4.9",
+    "mongoose": "^5.6.8",
     "passport": "^0.4.0",
     "passport-facebook-token": "^3.3.0",
-    "passport-github-token": "^2.1.0",
+    "passport-github-token": "^2.2.0",
     "passport-google-plus-token": "^2.1.0",
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
@@ -43,7 +43,7 @@
     "winston-mongodb": "^5.0.0"
   },
   "devDependencies": {
-    "jest": "^24.5.0",
+    "jest": "^24.8.0",
     "supertest": "^4.0.2"
   }
 }

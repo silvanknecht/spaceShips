@@ -507,5 +507,3 @@ function moveLaser(laser) {
   laser.position.x2 += (laser.speed.x / FPS) * laser.unitVector[0];
   laser.position.y2 += (laser.speed.y / FPS) * laser.unitVector[1];
 }
-
-

@@ -168,7 +168,7 @@ class FreeForAll {
 
   //  every ** seconds add a shield to playfield
   updateItems() {
-    if (this.items.length < this.MAX_PLAYERS) {
+    if (this.items.length < this.MAX_PLAYERS / 2) {
       let newItem = new Shield();
       this.items.push(newItem);
     }
