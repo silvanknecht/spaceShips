@@ -9,9 +9,11 @@ const Shield = require("../Models/Item/Shield");
 class GameServer {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 4;
-    this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
-    this.currentTime = this.GAMELENGTH;
+    this.MAX_PLAYERS = 1;
+    this.GAMELENGTH = 1 * 10; //10 * 60; // in seconds
+    this.currentTime;
+    this.running = false;
+    this.finished = false;
 
     // set up teams
     this.playerCount = 0;
@@ -23,32 +25,41 @@ class GameServer {
     this.nameSpace = nameSpace;
     this.tdm = io.of(`/${nameSpace}`).on("connection", client => {
       client.on("joinGame", jwtToken => {
-        // authenticate
-        let user;
-        try {
-          user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
-          logger.debug("A user tries to connect to the server", user);
-        } catch (error) {
-          client.emit("serverInfo", "tokenExpired");
-          return;
-        }
+        if (!this.running) {
+          // authenticate
+          let user;
+          try {
+            user = jwt.verify(jwtToken.split(" ")[1], config.get("jwtSecret"));
+            logger.debug("A user tries to connect to the server", user);
+          } catch (error) {
+            client.emit("serverInfo", "tokenExpired");
+            return;
+          }
 
-        /* Only one Player for every account */
-        for (let t of this.teams) {
-          for (let p of t.players) {
-            logger.debug(
-              "Checking if user is alread assigned to a player: ",
-              p.userId + "   " + user.sub._id
-            );
+          /* Only one Player for every account */
+          for (let gS of gameServers) {
+            for (let t of gS.teams) {
+              for (let p of t.players) {
+                logger.debug(
+                  "Checking if user is alread assigned to a player: ",
+                  p.userId + "   " + user.sub._id
+                );
 
-            if (p.userId === user.sub._id) {
-              console.log("already exists");
-              client.emit("serverInfo", "existsAlready");
-              return;
+                if (p.userId === user.sub._id) {
+                  console.log("already exists");
+                  client.emit("serverInfo", "existsAlready");
+                  return;
+                }
+              }
             }
           }
+
+          console.log("inside", client.id);
+          this.joinGame(client, user);
+          if (this.playerCount === this.MAX_PLAYERS) {
+            this.start();
+          }
         }
-        this.joinGame(client, user);
       });
     });
 
@@ -57,10 +68,16 @@ class GameServer {
 
     /** ITEMS  */
     this.items = [];
+  }
+
+  start() {
+    this.currentTime = this.GAMELENGTH;
+    this.running = true;
     setInterval(this.update.bind(this), 1000 / FPS);
     setInterval(this.updateGameTime.bind(this), 1000);
     setInterval(this.updateItems.bind(this), 10000);
   }
+
   update() {
     this.deleteLasers();
     // move lasers
@@ -142,7 +159,6 @@ class GameServer {
       this.tdm.emit("serverTime", this.currentTime);
     } else {
       this.gameFinished();
-      this.currentTime = this.GAMELENGTH;
     }
   }
 
@@ -155,23 +171,36 @@ class GameServer {
   }
 
   /* Defines what happens when the game ended*/
-  gameFinished(t1) {
+  gameFinished(t) {
+    this.running = false;
     for (let t of this.teams) {
       for (let p of t.players) {
         p.updateStats();
       }
     }
-    if (t1) {
-      this.tdm.emit("gameEnd", "Team: " + t1.name + " won the game!");
+    if (t) {
+      this.tdm.emit("gameEnd", `Team: ${t.name} won the game!`);
+    } else if (this.teams[0].tickets === this.teams[1].tickets) {
+      this.tdm.emit("gameEnd", `Time run out: DRAW!`);
+    } else if (this.teams[0].tickets > this.teams[1].tickets) {
+      this.tdm.emit(
+        "gameEnd",
+        `Time run out! Team: ${this.team[0].name} won the game!`
+      );
     } else {
-      this.tdm.emit("gameEnd", "Time Run out!");
+      this.tdm.emit(
+        "gameEnd",
+        `Time run out! Team: ${this.team[1].name} won the game!`
+      );
     }
+
     for (let t of this.teams) {
       t.restore();
       for (let p of t.players) {
         p.spawnShip(t.id);
       }
     }
+    this.finished = true;
   }
 
   deleteLasers() {
@@ -193,7 +222,6 @@ class GameServer {
   }
   joinGame(client, user) {
     /** Only allow a user to create a player if he isn't already in the game */
-
 
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
     let player = new Player(client.id, user.sub._id);
@@ -252,6 +280,11 @@ class GameServer {
           if (t.players[p].id === client.id) {
             t.players.splice(p, 1);
             this.playerCount--;
+            // for (let i = players.length - 1; i >= 0; i--) {
+            //   if (players[i].id === client.id) {
+            //     players.splice(i, 1);
+            //   }
+            // }
           }
         }
       }
