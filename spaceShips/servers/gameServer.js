@@ -9,7 +9,7 @@ const Shield = require("../Models/Item/Shield");
 class GameServer {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 4;
+    this.MAX_PLAYERS = 2;
     this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
     this.currentTime;
     this.running = false;
@@ -54,11 +54,26 @@ class GameServer {
             }
           }
 
-          console.log("inside", client.id);
           this.joinGame(client, user);
+          this.tdm.emit(
+            "startInfo",
+            `Waiting for players: ${this.playerCount}/${this.MAX_PLAYERS}`
+          );
           if (this.playerCount === this.MAX_PLAYERS) {
-            this.start();
+            let callCount = 10;
+            let _this = this;
+            let repeater = setInterval(function() {
+              if (callCount > 0) {
+                _this.tdm.emit("startInfo", `Game starts in ${callCount}`);
+                callCount--;
+              } else {
+                clearInterval(repeater);
+                _this.start();
+              }
+            }, 1000);
           }
+        } else {
+          console.log(`Game already in progress!`);
         }
       });
     });
@@ -76,6 +91,7 @@ class GameServer {
     setInterval(this.update.bind(this), 1000 / FPS);
     setInterval(this.updateGameTime.bind(this), 1000);
     setInterval(this.updateItems.bind(this), 10000);
+    this.tdm.emit("gameStarted");
   }
 
   update() {
@@ -139,7 +155,7 @@ class GameServer {
               }
             }
             if (t.tickets === 0) {
-              this.gameFinished(t1);
+              this.gameFinished();
             }
           } else {
             if (checkForHit.hit) {
@@ -147,6 +163,9 @@ class GameServer {
             }
           }
         }
+      }
+      if (t.players.length === 0) {
+        this.gameFinished();
       }
     }
     this.deleteLasers();
@@ -178,20 +197,32 @@ class GameServer {
         p.updateStats();
       }
     }
-    if (t) {
-      this.tdm.emit("gameEnd", `Team: ${t.name} won the game!`);
-    } else if (this.teams[0].tickets === this.teams[1].tickets) {
-      this.tdm.emit("gameEnd", `Time run out: DRAW!`);
-    } else if (this.teams[0].tickets > this.teams[1].tickets) {
-      this.tdm.emit(
-        "gameEnd",
-        `Time run out! Team: ${this.team[0].name} won the game!`
-      );
+    if (this.currentTime > 0) {
+      if (this.teams[0].players.length === 0) {
+        this.tdm.emit(
+          "gameEnd",
+          `Time run out! Team: ${this.teams[1].name} won the game!`
+        );
+      } else {
+        this.tdm.emit(
+          "gameEnd",
+          `Time run out! Team: ${this.teams[0].name} won the game!`
+        );
+      }
     } else {
-      this.tdm.emit(
-        "gameEnd",
-        `Time run out! Team: ${this.team[1].name} won the game!`
-      );
+      if (this.teams[0].tickets === this.teams[1].tickets) {
+        this.tdm.emit("gameEnd", `Time run out: DRAW!`);
+      } else if (this.teams[0].tickets > this.teams[1].tickets) {
+        this.tdm.emit(
+          "gameEnd",
+          `Time run out! Team: ${this.teams[0].name} won the game!`
+        );
+      } else {
+        this.tdm.emit(
+          "gameEnd",
+          `Time run out! Team: ${this.teams[1].name} won the game!`
+        );
+      }
     }
 
     for (let t of this.teams) {
@@ -244,14 +275,14 @@ class GameServer {
 
     client.on("turn", mouseDir => {
       let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined) {
+      if (shipToUpdate !== undefined && this.running) {
         shipToUpdate.angle = mouseDir;
       }
     });
 
     client.on("thrusting", bool => {
       let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined) {
+      if (shipToUpdate !== undefined && this.running) {
         if (bool) {
           shipToUpdate.thrusting = true;
         } else {
@@ -262,7 +293,7 @@ class GameServer {
 
     client.on("shooting", bool => {
       let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined) {
+      if (shipToUpdate !== undefined && this.running) {
         if (bool && !shipToUpdate.isDead) {
           let laserFired = shipToUpdate.shoot();
           if (laserFired.laser) {

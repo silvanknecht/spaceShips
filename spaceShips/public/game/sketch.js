@@ -1,3 +1,6 @@
+const startInfo = document.getElementById("startInfo");
+const overlay = document.getElementById("overlay");
+
 let teams;
 let items;
 let time;
@@ -81,6 +84,13 @@ socket.on("newServer", nameSpace => {
   socket.on("connect", () => {
     socket.emit("joinGame", jwtToken);
     console.log("connected to game server!");
+  });
+  socket.on("startInfo", message => {
+    startInfo.innerText = message;
+  });
+
+  socket.on("gameStarted", () => {
+    overlay.style.display = "none";
   });
 
   socket.on("update", data => {
