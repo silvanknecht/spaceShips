@@ -1,7 +1,6 @@
 class Laser {
-  constructor(x1, y1, shipAngle, userId, teamId) {
+  constructor(x1, y1, shipAngle, userId) {
     this.id = Date.now() + userId;
-    this.teamId = teamId;
     this.userId = userId;
     this.speed = {
       x: 1200,

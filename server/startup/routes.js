@@ -17,14 +17,18 @@ module.exports = function(app) {
     res.sendFile(path.join(parentDir + "/spaceShips/public/index.html"));
   });
   app.use("/game", express.static("spaceShips/public/game"));
-  app.get("/game", function(req, res) {
+  app.get("/game/teamdeathmatch", function(req, res) {
     var parentDir = path.normalize(__dirname + "/../..");
-    res.sendFile(path.join(parentDir + "/spaceShips/public/game/game.html"));
+    res.sendFile(path.join(parentDir + "/spaceShips/public/game/teamdeathmatch.html"));
+  });
+  app.get("/game/freeforall", function(req, res) {
+    var parentDir = path.normalize(__dirname + "/../..");
+    res.sendFile(path.join(parentDir + "/spaceShips/public/game/freeforall.html"));
   });
   app.get("/interface", function(req, res) {
     var parentDir = path.normalize(__dirname + "/../..");
     res.sendFile(
-      path.join(parentDir + "/spaceShips/public/interface/index.html")
+      path.join(parentDir + "/spaceShips/public/interface/interface.html")
     );
   });
 };

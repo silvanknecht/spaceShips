@@ -1,4 +1,5 @@
 const bcrypt = require("bcryptjs");
+const mongoose = require("mongoose");
 
 const User = require("../models/user");
 const ShipPreferences = require("../models/shipPreferences");
@@ -104,10 +105,25 @@ module.exports = {
     }
   },
 
+  nickname: async function(req, res, next) {
+    let { _id } = req.user._id;
+    let { nickname } = req.body;
+
+    try {
+      await User.updateOne(
+        { _id: new mongoose.Types.ObjectId(_id) },
+        { $set: { nickname } }
+      );
+      res.json({ message: `User with ID: ${_id} updated sucessfully` });
+    } catch (error) {
+      res.status(404);
+    }
+  },
+
   me: async function(req, res, next) {
     try {
-      res.json(req.user);
       logger.debug("Access to me granted!");
+      res.json(req.user);
     } catch (error) {
       logger.error(error);
       next(false);

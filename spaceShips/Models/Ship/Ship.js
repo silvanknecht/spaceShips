@@ -31,7 +31,7 @@ class Ship {
   }
 
   update(items) {
-       // hudge performance loss without if statements
+    // hudge performance loss without if statements
     // check if boarder is left
     if (
       this.position.x < this.size + 5 ||
@@ -67,51 +67,53 @@ class Ship {
     );
 
     for (let l of lasers) {
-      for (let p = 0; p <= l.length; p++) {
-        let pointToTest = {
-          x: l.position.x1 + p * l.unitVector[0],
-          y: l.position.y1 + p * l.unitVector[1]
-        };
+      if (l.userId !== this.userId) {
+        for (let p = 0; p <= l.length; p++) {
+          let pointToTest = {
+            x: l.position.x1 + p * l.unitVector[0],
+            y: l.position.y1 + p * l.unitVector[1]
+          };
 
-        let area1 = Math.abs(
-          (this.corners.x1 - pointToTest.x) *
-            (this.corners.y2 - pointToTest.y) -
-            (this.corners.x2 - pointToTest.x) *
-              (this.corners.y1 - pointToTest.y)
-        );
-        let area2 = Math.abs(
-          (this.corners.x2 - pointToTest.x) *
-            (this.corners.y3 - pointToTest.y) -
-            (this.corners.x3 - pointToTest.x) *
-              (this.corners.y2 - pointToTest.y)
-        );
-        let area3 = Math.abs(
-          (this.corners.x3 - pointToTest.x) *
-            (this.corners.y1 - pointToTest.y) -
+          let area1 = Math.abs(
             (this.corners.x1 - pointToTest.x) *
-              (this.corners.y3 - pointToTest.y)
-        );
+              (this.corners.y2 - pointToTest.y) -
+              (this.corners.x2 - pointToTest.x) *
+                (this.corners.y1 - pointToTest.y)
+          );
+          let area2 = Math.abs(
+            (this.corners.x2 - pointToTest.x) *
+              (this.corners.y3 - pointToTest.y) -
+              (this.corners.x3 - pointToTest.x) *
+                (this.corners.y2 - pointToTest.y)
+          );
+          let area3 = Math.abs(
+            (this.corners.x3 - pointToTest.x) *
+              (this.corners.y1 - pointToTest.y) -
+              (this.corners.x1 - pointToTest.x) *
+                (this.corners.y3 - pointToTest.y)
+          );
 
-        if (area1 + area2 + area3 === areaOrig) {
-          if (this.shield.hitpoints > 0) {
-            this.shield.hitpoints -= l.dmg;
-            if (this.shield.hitpoints < 0) {
-              this.health -= this.shield.hitpoints;
-              this.shield = { hitpoints: 0 };
+          if (area1 + area2 + area3 === areaOrig) {
+            if (this.shield.hitpoints > 0) {
+              this.shield.hitpoints -= l.dmg;
+              if (this.shield.hitpoints < 0) {
+                this.health -= this.shield.hitpoints;
+                this.shield = { hitpoints: 0 };
+              }
+            } else {
+              this.health -= l.dmg;
             }
-          } else {
-            this.health -= l.dmg;
-          }
 
-          if (this.health <= 0) {
-            this.isDead = true;
+            if (this.health <= 0) {
+              this.isDead = true;
+              l.needsDelete = true;
+              return { died: true, laser: l };
+            }
             l.needsDelete = true;
-            return { died: true, laser: l };
+            return { hit: this.userId, died: false, laser: l };
+          } else {
+            //console.log("not hit");
           }
-          l.needsDelete = true;
-          return { hit: this.userId, died: false, laser: l };
-        } else {
-          //console.log("not hit");
         }
       }
     }
@@ -145,8 +147,7 @@ class Ship {
         this.position.x,
         this.position.y,
         this.angle,
-        this.userId,
-        this.teamId
+        this.userId
       );
       this.ammo--;
       return { laser, reloading: this.reloading };
@@ -175,6 +176,9 @@ class Ship {
       case 1:
         x = Math.random() * (WIDTH - 25 - (WIDTH - 150)) + (WIDTH - 150);
         break;
+      default:
+        x = Math.random() * (WIDTH - 25 - 25) + 25;
+        break;
     }
     return { x, y };
   }
@@ -184,9 +188,10 @@ class Ship {
     switch (teamId) {
       case 0:
         return (1 / 180) * Math.PI;
-
       case 1:
         return (180 / 180) * Math.PI;
+      default:
+        return Math.random() * Math.PI * 2;
     }
   }
 

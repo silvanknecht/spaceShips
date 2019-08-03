@@ -4,35 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="X-UA-Compatible" content="ie=edge" />
-    <title>SpaceShips</title>
-    <link rel="shortcut icon" href="data:image/x-icon;," type="image/x-icon" />
+    <title>SpaceShips - Interface</title>
     <link
       rel="stylesheet"
       href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
       integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
       crossorigin="anonymous"
     />
+
     <style>
       body {
-        margin: 0;
-        padding: 0;
         background-color: black;
       }
-
-      canvas {
-        position: fixed;
-        top: 0;
-        left: 0;
-        /* all other elements z-index: 1 */
-        z-index: -1;
-        cursor: url("crosshairs/cursor2.cur") 16 16, auto;
-        padding-left: 0;
-        padding-right: 0;
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
-      }
-
       .container-fluid {
         padding: 50px;
       }
@@ -44,10 +27,32 @@
   </head>
   <body>
     <div class="container-fluid">
-      <div id="overlay" class="container">
-        <p id="startInfo"></p>
+      <div class="container">
+        <form onsubmit="return false;">
+          <div class="input-group mb-3">
+            <input
+              id="nickname"
+              class="form-control"
+              type="text"
+              placeholder="Enter a Nickname"
+              minlength="3"
+              maxlength="10"
+              required
+            />
+            <button type="submit" id="changeNicknameB" class="btn btn-dark">
+              Change
+            </button>
+          </div>
+        </form>
+        <button id="joinTeamDeathMatch" class="btn btn-dark">
+          Team Deatch Match
+        </button>
+        <button id="joinFreeForAll" class="btn btn-dark">Free For All</button>
+
+        <button id="logout" class="btn btn-dark">Log out</button>
       </div>
     </div>
+
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
       integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
@@ -65,10 +70,6 @@
     ></script>
     <script src="/global.js"></script>
     <script src="/me.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/p5.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.8.0/addons/p5.sound.js"></script>
-    <script src="Star.js"></script>
-    <script src="sketch.js"></script>
+    <script src="interface.js"></script>
   </body>
 </html>

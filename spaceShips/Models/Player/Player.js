@@ -3,11 +3,11 @@ const User = require("../../../server/models/user");
 const ShipPreferences = require("../../../server/models/shipPreferences");
 
 class Player {
-  constructor(id, userId) {
+  constructor(id, user) {
     this.id = id;
-    this.userId = userId;
+    this.userId = user.sub._id;
     this.ship;
-    this.name = "Anonymous" + Math.random().toFixed(3);
+    this.name = user.sub.nickname;
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
     this.stats = {
@@ -18,8 +18,7 @@ class Player {
 
   joinTeam(team) {
     team.players.push(this);
-    this.spawnShip(team.id);
-  }
+      }
 
   leaveTeam(team) {
     for (let i = team.players.length - 1; i >= 0; i--) {

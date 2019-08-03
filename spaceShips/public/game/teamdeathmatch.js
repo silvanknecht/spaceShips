@@ -63,7 +63,7 @@ let socket = io(url, {
 });
 
 socket.on("connect", function() {
-  socket.emit("authenticate", jwtToken);
+  socket.emit("requestGameServer", "teamDeathMatch");
   console.log("Connected to Server!");
 });
 
@@ -91,6 +91,7 @@ socket.on("newServer", nameSpace => {
 
   socket.on("gameStarted", () => {
     overlay.style.display = "none";
+    startInfo.style.display = "none";
   });
 
   socket.on("update", data => {
@@ -153,15 +154,15 @@ socket.on("newServer", nameSpace => {
       window.location.href = url;
     } else if (data === "existsAlready") {
       alert("You're already in the game!");
-      window.location.href = url;
+      window.location.href = url + "interface";
     } else if (data === "tokenExpired") {
-      window.location.href = url;
+      window.location.href = url + "interface";
     }
   });
 
   socket.on("gameEnd", data => {
     alert(data);
-    window.location.replace(url + "interface/index.html");
+    window.location.replace(url + "interface");
   });
 
   socket.on("serverTime", data => {
@@ -507,5 +508,4 @@ function moveLaser(laser) {
   laser.position.y2 += (laser.speed.y / FPS) * laser.unitVector[1];
 }
 
-/** LATENCY CLIENTSIDE**/
-var startTime;
+

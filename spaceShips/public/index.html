@@ -36,12 +36,6 @@
     </style>
   </head>
   <body>
-    <script src="/global.js"></script>
-    <script>
-      if (localStorage.getItem("Authorization")) {
-        window.location.replace(url + "interface/index.html");
-      }
-    </script>
 
     <div class="container-fluid">
       <div class="container">
@@ -138,6 +132,13 @@
         </div>
       </div>
     </div>
+
+    <script src="/global.js"></script>
+    <script>
+      if (localStorage.getItem("Authorization")) {
+        window.location.replace(url + "interface");
+      }
+    </script>
 
     <script
       src="https://code.jquery.com/jquery-3.3.1.slim.min.js"

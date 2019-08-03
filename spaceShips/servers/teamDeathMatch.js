@@ -6,23 +6,26 @@ const Player = require("../Models/Player/Player");
 const Team = require("../Models/Team/Team");
 const Shield = require("../Models/Item/Shield");
 
-class GameServer {
+class TeamDeatchMatch {
   constructor(io, nameSpace) {
     /** Game settings */
     this.MAX_PLAYERS = 2;
     this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
-    this.currentTime;
-    this.running = false;
-    this.finished = false;
 
     // set up teams
     this.playerCount = 0;
+    this.players = [];
     this.teams = [];
     this.teams.push(new Team(0, "yellow", "#ffff00"));
     this.teams.push(new Team(1, "puple", "#FF00FF"));
 
     /** Server */
+    this.type = "teamDeathMatch";
     this.nameSpace = nameSpace;
+    this.currentTime;
+    this.running = false;
+    this.finished = false;
+    this.open = true;
     this.tdm = io.of(`/${nameSpace}`).on("connection", client => {
       client.on("joinGame", jwtToken => {
         if (!this.running) {
@@ -37,19 +40,17 @@ class GameServer {
           }
 
           /* Only one Player for every account */
-          for (let gS of gameServers) {
-            for (let t of gS.teams) {
-              for (let p of t.players) {
-                logger.debug(
-                  "Checking if user is alread assigned to a player: ",
-                  p.userId + "   " + user.sub._id
-                );
+          for (let gM of gameServers[this.type]) {
+            for (let p of gM.players) {
+              logger.debug(
+                "Checking if user is alread assigned to a player: ",
+                p.userId + "   " + user.sub._id
+              );
 
-                if (p.userId === user.sub._id) {
-                  console.log("already exists");
-                  client.emit("serverInfo", "existsAlready");
-                  return;
-                }
+              if (p.userId === user.sub._id) {
+                console.log("already exists");
+                client.emit("serverInfo", "existsAlready");
+                return;
               }
             }
           }
@@ -190,7 +191,7 @@ class GameServer {
   }
 
   /* Defines what happens when the game ended*/
-  gameFinished(t) {
+  gameFinished() {
     this.running = false;
     for (let t of this.teams) {
       for (let p of t.players) {
@@ -199,15 +200,9 @@ class GameServer {
     }
     if (this.currentTime > 0) {
       if (this.teams[0].players.length === 0) {
-        this.tdm.emit(
-          "gameEnd",
-          `Time run out! Team: ${this.teams[1].name} won the game!`
-        );
+        this.tdm.emit("gameEnd", `Team: ${this.teams[1].name} won the game!`);
       } else {
-        this.tdm.emit(
-          "gameEnd",
-          `Time run out! Team: ${this.teams[0].name} won the game!`
-        );
+        this.tdm.emit("gameEnd", `Team: ${this.teams[0].name} won the game!`);
       }
     } else {
       if (this.teams[0].tickets === this.teams[1].tickets) {
@@ -225,12 +220,6 @@ class GameServer {
       }
     }
 
-    for (let t of this.teams) {
-      t.restore();
-      for (let p of t.players) {
-        p.spawnShip(t.id);
-      }
-    }
     this.finished = true;
   }
 
@@ -255,19 +244,23 @@ class GameServer {
     /** Only allow a user to create a player if he isn't already in the game */
 
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
-    let player = new Player(client.id, user.sub._id);
+    let player = new Player(client.id, user);
 
     if (
       this.teams[0].players.length <= this.teams[1].players.length &&
       this.teams[0].players.length < this.MAX_PLAYERS
     ) {
       player.joinTeam(this.teams[0]);
+      player.spawnShip(this.teams[0].id);
       client.team = this.teams[0].id;
       this.playerCount++;
+      this.players.push(player);
     } else if (this.teams[1].players.length < this.MAX_PLAYERS) {
       player.joinTeam(this.teams[1]);
+      player.spawnShip(this.teams[1].id);
       client.team = this.teams[1].id;
       this.playerCount++;
+      this.players.push(player);
     } else {
       client.emit("serverInfo", "serverFull");
       return;
@@ -311,11 +304,12 @@ class GameServer {
           if (t.players[p].id === client.id) {
             t.players.splice(p, 1);
             this.playerCount--;
-            // for (let i = players.length - 1; i >= 0; i--) {
-            //   if (players[i].id === client.id) {
-            //     players.splice(i, 1);
-            //   }
-            // }
+            for (let i = this.players.length - 1; i >= 0; i--) {
+              if (this.players[i].id === client.id) {
+                this.players.splice(i, 1);
+                console.log(this.players);
+              }
+            }
           }
         }
       }
@@ -328,4 +322,4 @@ class GameServer {
   }
 }
 
-module.exports = GameServer;
+module.exports = TeamDeatchMatch;

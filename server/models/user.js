@@ -66,6 +66,12 @@ const userSchema = new Schema({
   shipPreferences: {
     type: [mongoose.Schema.Types.ObjectId],
     default: []
+  },
+  nickname: {
+    type: String,
+    required: false,
+    default: "User" + Math.random().toFixed(3) * 1000,
+    max: 5
   }
 });
 
@@ -77,7 +83,7 @@ userSchema.methods.generateAuthToken = function() {
   const token = JWT.sign(
     {
       iss: "NodeJs_Authentification",
-      sub: { _id: this._id },
+      sub: { _id: this._id, nickname: this.nickname },
       iat: Math.floor(Date.now() / 1000),
       exp: Math.floor(Date.now() / 1000) + 60 * 60 // current date + 1 hour
     },
@@ -98,6 +104,16 @@ function validateCredentials(req, res, next) {
   return Joi.validate(req, schema);
 }
 
+function validateNickname(req, res, next) {
+  const schema = {
+    nickname: Joi.string()
+      .required()
+      .max(20)
+  };
+  return Joi.validate(req, schema);
+}
+
 // Export the model
 module.exports = User;
 module.exports.validateCredentials = validateCredentials;
+module.exports.validateNickname = validateNickname;

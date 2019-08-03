@@ -3,7 +3,7 @@ const passport = require("passport");
 require("../middleware/passport");
 
 const oAuthErr = require("../middleware/oAuthErr");
-const { validateCredentials } = require("../models/user");
+const { validateCredentials, validateNickname } = require("../models/user");
 const validate = require("../middleware/validate");
 const UsersController = require("../controllers/users");
 
@@ -47,6 +47,12 @@ router.post(
   passportGithub,
   oAuthErr,
   UsersController.thirdPartyOAuth
+);
+router.put(
+  "/nickname",
+  validate(validateNickname),
+  passportJWT,
+  UsersController.nickname
 );
 router.get("/me", passportJWT, UsersController.me);
 

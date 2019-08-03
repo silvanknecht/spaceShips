@@ -7,7 +7,8 @@ class Team {
     this.tickets = 30;
   }
 
-  restore(){
+  restore() {
+    // no in use currently since the game gets closed anyway
     this.tickets = 30;
   }
 }
