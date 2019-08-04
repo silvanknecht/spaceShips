@@ -8,10 +8,18 @@ let logout;
 (async () => {
   nickname = document.getElementById("nickname");
   changeNicknameB = document.getElementById("changeNicknameB");
-
-  let data = await getMe();
-  let jsonData = await data.json();
-  nickname.value = jsonData.nickname;
+  try {
+    let data = await getMe();
+    if (data.status !== 200) {
+      console.log(data.statusText);
+      localStorage.removeItem("Authorization");
+      window.location.replace(url);
+    }
+    let jsonData = await data.json();
+    nickname.value = jsonData.nickname;
+  } catch (error) {
+    console.error("Error during user authentication!", error);
+  }
   joinTeamDeathMatch = document.getElementById("joinTeamDeathMatch");
   joinFreeForAll = document.getElementById("joinFreeForAll");
 

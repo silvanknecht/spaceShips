@@ -20,7 +20,7 @@ module.exports = function(io) {
 
       for (let [i, gM] of gameServers[gameMode].entries()) {
         //&&!gS.running  For team deathmatch
-        if (gM.playerCount < gM.MAX_PLAYERS && gM.open) {
+        if (gM.playerCount < gM.MAX_PLAYERS && gM.open && !gM.finished) {
           client.emit("newServer", gM.nameSpace);
           return;
         } else if (i === gameServers.length - 1) {
@@ -61,8 +61,8 @@ module.exports = function(io) {
           });
           gM.tdm.removeAllListeners(); // Remove all Listeners for the event emitter
           delete io.nsps[gM.tdm.nameSpace]; // Remove from the server namespaces
+          logger.debug("gameServer deleted");
           gameServers[gS].splice(gameServers[gS].indexOf(gM), 1);
-          logger.debug("gameServer deleted", gameServers);
         }
       }
     }

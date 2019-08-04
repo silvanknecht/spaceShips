@@ -37,18 +37,77 @@
         padding: 50px;
       }
       .container {
-        background-color: white;
+        background-color: rgba(255, 255, 255, 0.8);
+
         padding: 50px;
       }
-      #startInfo {
-        text-align: center;
+
+      #mid {
+        display: none;
+      }
+
+      #backToInterface {
+        display: none;
+      }
+
+      h2 {
+        font-size: 20px;
       }
     </style>
   </head>
   <body>
-    <div class="container-fluid">
-      <div id="overlay" class="container">
-        <p id="startInfo"></p>
+    <div
+      class="container-fluid"
+      style="-moz-user-select: none; -webkit-user-select: none; -ms-user-select:none; user-select:none;-o-user-select:none;"
+      unselectable="on"
+      onselectstart="return false;"
+      onmousedown="return false;"
+    >
+      <div id="start" class="container">
+        <p id="startInfo" class="text-center"></p>
+      </div>
+
+      <div id="mid" class="container">
+        <h1 id="serverTitle" class="text-center">Leaderboard</h1>
+        <p id="serverInfo" class="text-center">First team to 45 kills wins!</p>
+        <hr />
+        <div class="row">
+          <div class="col-md-5">
+            <h2 id="teamName0"></h2>
+
+            <table id="leaderboardT0" class="table">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Rank</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kills</th>
+                  <th scope="col">Deaths</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTb0"></tbody>
+            </table>
+          </div>
+
+          <div class="col-md-2">
+            <!-------null------>
+          </div>
+
+          <div class="col-md-5">
+            <h2 id="teamName1"></h2>
+            <table id="leaderboardT1" class="table">
+              <thead class="thead-dark">
+                <tr>
+                  <th scope="col">Rank</th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Kills</th>
+                  <th scope="col">Deaths</th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardTb1"></tbody>
+            </table>
+          </div>
+        </div>
+        <button id="backToInterface" class="btn btn-dark">Close game</button>
       </div>
     </div>
     <script

@@ -1,5 +1,17 @@
 const startInfo = document.getElementById("startInfo");
-const overlay = document.getElementById("overlay");
+const start = document.getElementById("start");
+const mid = document.getElementById("mid");
+const leaderboardTb = [
+  document.getElementById("leaderboardTb0"),
+  document.getElementById("leaderboardTb1")
+];
+const teamNameh2 = [
+  document.getElementById("teamName0"),
+  document.getElementById("teamName1")
+];
+const backToInterface = document.getElementById("backToInterface");
+const serverTitle = document.getElementById("serverTitle");
+const serverInfo = document.getElementById("serverInfo");
 
 let teams;
 let items;
@@ -29,12 +41,25 @@ let middle = { x: WIDTH / 2, y: CANVASHIGHT / 2 + SCOREBOARD_HIGHT };
 let stars = [];
 const STARS = 1 * 500; //TODO: performance loss if to many stars... maybe static (gif) background!
 
-window.onload = function() {
+window.onload = async function() {
+  try {
+    let data = await getMe();
+    if (data.status !== 200) {
+      console.log(data.statusText);
+      localStorage.removeItem("Authorization");
+      window.location.replace(url);
+    }
+  } catch (error) {
+    console.error("Error during user authentication!", error);
+  }
   fetch("crosshairs/cursor1.cur", function() {
     // Do other processing here
   });
   canvas = document.getElementsByTagName("canvas")[0];
   resizeCanv();
+  backToInterface.addEventListener("click", () => {
+    window.location.replace(url + "interface");
+  });
 };
 window.onresize = function() {
   resizeCanv();
@@ -90,12 +115,24 @@ socket.on("newServer", nameSpace => {
   });
 
   socket.on("gameStarted", () => {
-    overlay.style.display = "none";
-    startInfo.style.display = "none";
+    start.style.display = "none";
+    document.addEventListener("keydown", event => {
+      if (event.isComposing || event.keyCode === 9) {
+        event.preventDefault();
+        mid.style.display = "block";
+      }
+    });
+    document.addEventListener("keyup", event => {
+      if (event.isComposing || event.keyCode === 9) {
+        event.preventDefault();
+        mid.style.display = "none";
+      }
+    });
   });
 
   socket.on("update", data => {
     teams = data.teams;
+    createLeaderBoard(data.teams);
     items = data.items;
     //console.log("Teams: ", teams);
 
@@ -130,7 +167,7 @@ socket.on("newServer", nameSpace => {
   socket.on("laserHit_laserToDelete", laser => {
     // if it was your laser flash hitmarker
     if (myShip !== undefined) {
-      if (laser.userId === myShip.userId && !myShip.reloading) {
+      if (laser.userId === myShip.userId) {
         canvas.style.cursor = "url('crosshairs/cursor1.cur') 16 16,auto";
         setTimeout(() => {
           canvas.style.cursor = "url('crosshairs/cursor2.cur') 16 16,auto";
@@ -161,8 +198,13 @@ socket.on("newServer", nameSpace => {
   });
 
   socket.on("gameEnd", data => {
-    alert(data);
-    window.location.replace(url + "interface");
+    socket.close();
+    let { message, teams } = data;
+    serverTitle.innerText = "GAME ENDED";
+    serverInfo.innerText = message;
+    createLeaderBoard(teams);
+    mid.style.display = "block";
+    backToInterface.style.display = "block";
   });
 
   socket.on("serverTime", data => {
@@ -506,4 +548,30 @@ function moveLaser(laser) {
   laser.position.y1 += (laser.speed.y / FPS) * laser.unitVector[1];
   laser.position.x2 += (laser.speed.x / FPS) * laser.unitVector[0];
   laser.position.y2 += (laser.speed.y / FPS) * laser.unitVector[1];
+}
+
+function createLeaderBoard(teams) {
+  for (let [i, t] of teams.entries()) {
+    leaderboardTb[i].innerHTML = "";
+    teamNameh2[i].innerText = t.name + ` : ${t.tickets} tickets`;
+    let rank = t.players.length;
+    for (let p of t.players.reverse()) {
+      if (myShip !== undefined) {
+        let row = leaderboardTb[i].insertRow(0);
+        if (myShip. userId === p.userId) {
+          row.style = "font-weight: bold";
+        }
+
+        let cell = row.insertCell(0);
+        cell.innerHTML = rank;
+        cell = row.insertCell(1);
+        cell.innerHTML = p.name;
+        cell = row.insertCell(2);
+        cell.innerHTML = p.stats.kills;
+        cell = row.insertCell(3);
+        cell.innerHTML = p.stats.deaths;
+        rank--;
+      }
+    }
+  }
 }

@@ -25,9 +25,6 @@ app.use(
   })
 );
 
-
-
-
 /**===================SPACE SHIPS========================== */
 
 const io = require("socket.io")(server);
@@ -35,7 +32,3 @@ require("../spaceShips/spaceShipsServer")(io);
 
 module.exports = server;
 
-/* Memory usage in MB*/
-// setInterval(() => {
-//   console.log(process.memoryUsage().heapUsed / 1024 / 1024);
-// }, 1000);

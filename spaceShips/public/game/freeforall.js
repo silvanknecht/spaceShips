@@ -1,7 +1,10 @@
 const startInfo = document.getElementById("startInfo");
-const overlay = document.getElementById("overlay");
-const leaderboardD = document.getElementById("leaderboardD");
+const start = document.getElementById("start");
+const mid = document.getElementById("mid");
 const leaderboardTb = document.getElementById("leaderboardTb");
+const backToInterface = document.getElementById("backToInterface");
+const serverTitle = document.getElementById("serverTitle");
+const serverInfo = document.getElementById("serverInfo");
 
 let players;
 let items;
@@ -31,12 +34,26 @@ let middle = { x: WIDTH / 2, y: CANVASHIGHT / 2 + SCOREBOARD_HIGHT };
 let stars = [];
 const STARS = 1 * 500; //TODO: performance loss if to many stars... maybe static (gif) background!
 
-window.onload = function() {
+window.onload = async function() {
+  try {
+    let data = await getMe();
+    if (data.status !== 200) {
+      console.log(data.statusText);
+      localStorage.removeItem("Authorization");
+      window.location.replace(url);
+    }
+  } catch (error) {
+    console.error("Error during user authentication!", error);
+  }
   fetch("crosshairs/cursor1.cur", function() {
     // Do other processing here
   });
   canvas = document.getElementsByTagName("canvas")[0];
   resizeCanv();
+
+  backToInterface.addEventListener("click", () => {
+    window.location.replace(url + "interface");
+  });
 };
 window.onresize = function() {
   resizeCanv();
@@ -92,20 +109,17 @@ socket.on("newServer", nameSpace => {
   });
 
   socket.on("gameStarted", () => {
-    overlay.style.display = "none";
-    startInfo.style.display = "none";
+    start.style.display = "none";
     document.addEventListener("keydown", event => {
       if (event.isComposing || event.keyCode === 9) {
         event.preventDefault();
-        overlay.style.display = "block";
-        leaderboardD.style.display = "block";
+        mid.style.display = "block";
       }
     });
     document.addEventListener("keyup", event => {
       if (event.isComposing || event.keyCode === 9) {
         event.preventDefault();
-        overlay.style.display = "none";
-        leaderboardD.style.display = "none";
+        mid.style.display = "none";
       }
     });
   });
@@ -113,7 +127,7 @@ socket.on("newServer", nameSpace => {
   socket.on("update", data => {
     players = data.players;
     items = data.items;
-    createLeaderBoard(data.leaderboard);
+    createLeaderBoard(data.players);
 
     let x = mX - WIDTH / 2;
     let y = mY - HEIGHT / 2 - SCOREBOARD_HIGHT - 20;
@@ -146,7 +160,7 @@ socket.on("newServer", nameSpace => {
   socket.on("laserHit_laserToDelete", laser => {
     // if it was your laser flash hitmarker
     if (myShip !== undefined) {
-      if (laser.userId === myShip.userId && !myShip.reloading) {
+      if (laser.userId === myShip.userId) {
         canvas.style.cursor = "url('crosshairs/cursor1.cur') 16 16,auto";
         setTimeout(() => {
           canvas.style.cursor = "url('crosshairs/cursor2.cur') 16 16,auto";
@@ -177,8 +191,13 @@ socket.on("newServer", nameSpace => {
   });
 
   socket.on("gameEnd", data => {
-    alert(data);
-    window.location.replace(url + "interface");
+    socket.close();
+    let { message, players } = data;
+    serverTitle.innerText = "GAME ENDED";
+    serverInfo.innerText = message;
+    createLeaderBoard(players);
+    mid.style.display = "block";
+    backToInterface.style.display = "block";
   });
 
   socket.on("serverTime", data => {
@@ -236,7 +255,6 @@ function draw() {
   mX = mouseX;
   mY = mouseY;
   myShip = undefined; // with out this the game brakes
-  let myTcolor;
   background(200);
   push();
   translate(-diffx, SCOREBOARD_HIGHT - diffy);
@@ -318,21 +336,35 @@ function draw() {
 
     let s = 0;
     for (let i = killFeed.length - 1; i >= 0; i--) {
-      push();
-      textAlign(RIGHT);
-      fill(255);
-      textSize(16);
-      text(
-        killFeed[i].killer.name + " => " + killFeed[i].corps.name,
-        WIDTH - 20,
-        SCOREBOARD_HIGHT + 20 + 16 * s
-      );
+      //fill(killFeed[i].killer.ship.color);
+
+      drawtext(WIDTH - 20, SCOREBOARD_HIGHT + 20 + 16 * s, [
+        [killFeed[i].killer.name, killFeed[i].killer.ship.color],
+        [" => ", [255, 0, 0]],
+        [killFeed[i].corps.name, killFeed[i].corps.ship.color]
+      ]);
       s++;
-      pop();
     }
   }
 
   drawMinimap();
+}
+
+function drawtext(x, y, text_array) {
+  push();
+  textAlign(RIGHT);
+  textSize(16);
+  var pos_x = x;
+  for (var i = text_array.length-1; i >= 0; i--) {
+    var part = text_array[i];
+    var t = part[0];
+    var c = part[1];
+    var w = textWidth(t);
+    fill(c);
+    text(t, pos_x, y);
+    pos_x -= w;
+  }
+  pop();
 }
 
 function drawShip(ship) {
@@ -511,7 +543,7 @@ function createLeaderBoard(leaderboard) {
     leaderboardTb.innerHTML = "";
     let rank = leaderboard.length;
 
-    for (let [i, p] of leaderboard.reverse().entries()) {
+    for (let p of leaderboard.reverse()) {
       let row = leaderboardTb.insertRow(0);
       if (myShip.userId === p.userId) {
         row.style = "font-weight: bold";

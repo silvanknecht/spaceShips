@@ -41,11 +41,11 @@
 
         padding: 50px;
       }
-      #startInfo {
-        text-align: center;
+      #mid {
+        display: none;
       }
 
-      #leaderboardD {
+      #backToInterface {
         display: none;
       }
     </style>
@@ -58,23 +58,25 @@
       onselectstart="return false;"
       onmousedown="return false;"
     >
-      <div id="overlay" class="container">
-        <p id="startInfo"></p>
-        <div id="leaderboardD">
-          <h1>Leaderboard</h1>
-          <p>First to 30 kills wins!</p>
-          <table id="leaderboardT" class="table">
-            <thead class="thead-dark">
-              <tr>
-                <th scope="col">Rank</th>
-                <th scope="col">Name</th>
-                <th scope="col">Kills</th>
-                <th scope="col">Deaths</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardTb"></tbody>
-          </table>
-        </div>
+      <div id="start" class="container">
+        <p id="startInfo" class="text-center"></p>
+      </div>
+      <div id="mid" class="container">
+        <h1 id="serverTitle" class="text-center">Leaderboard</h1>
+        <p id="serverInfo" class="text-center">First to 30 kills wins!</p>
+        <hr />
+        <table id="leaderboardT" class="table">
+          <thead class="thead-dark">
+            <tr>
+              <th scope="col">Rank</th>
+              <th scope="col">Name</th>
+              <th scope="col">Kills</th>
+              <th scope="col">Deaths</th>
+            </tr>
+          </thead>
+          <tbody id="leaderboardTb"></tbody>
+        </table>
+        <button id="backToInterface" class="btn btn-dark">Close game</button>
       </div>
     </div>
     <script

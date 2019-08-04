@@ -10,8 +10,8 @@ const Shield = require("../Models/Item/Shield");
 class TeamDeatchMatch {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 6;
-    this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
+    this.MAX_PLAYERS = 2;
+    this.GAMELENGTH = 60 * 5; //10 * 60; // in seconds
 
     // set up teams
     this.playerCount = 0;
@@ -41,17 +41,19 @@ class TeamDeatchMatch {
           }
 
           /* Only one Player for every account */
-          for (let gM of gameServers[this.type]) {
-            for (let p of gM.players) {
-              logger.debug(
-                "Checking if user is alread assigned to a player: ",
-                p.userId + "   " + user.sub._id
-              );
+          for (let gS in gameServers) {
+            for (let gM of gameServers[gS]) {
+              for (let p of gM.players) {
+                logger.debug(
+                  "Checking if user is alread assigned to a player: ",
+                  p.userId + "   " + user.sub._id
+                );
 
-              if (p.userId === user.sub._id) {
-                console.log("already exists");
-                client.emit("serverInfo", "existsAlready");
-                return;
+                if (p.userId === user.sub._id) {
+                  console.log("already exists");
+                  client.emit("serverInfo", "existsAlready");
+                  return;
+                }
               }
             }
           }
@@ -90,6 +92,7 @@ class TeamDeatchMatch {
     }
 
     for (let t of this.teams) {
+      t.sorteByKills();
       for (let p of t.players) {
         if (p.ship !== undefined) {
           // maybe the ship isn't created yet at this point --> player.js
@@ -134,7 +137,7 @@ class TeamDeatchMatch {
             p.ship.isDead = true;
             p.stats.deaths++;
             for (let k of this.players) {
-              if (checkForHit.laser.userId === p.userId) {
+              if (checkForHit.laser.userId === k.userId) {
                 k.stats.kills++;
                 this.tdm.emit("killFeed", { killer: k, corps: p });
               }
@@ -151,6 +154,7 @@ class TeamDeatchMatch {
           }
         }
       }
+
       if (t.players.length === 0) {
         this.gameFinished();
       }
@@ -178,34 +182,41 @@ class TeamDeatchMatch {
 
   /* Defines what happens when the game ended*/
   gameFinished() {
-    this.running = false;
     for (let t of this.teams) {
-      for (let p of t.players) {
-        p.updateStats();
-      }
+      t.sorteByKills();
     }
+    this.running = false;
+
     if (this.currentTime > 0) {
       if (this.teams[0].players.length === 0) {
-        this.tdm.emit("gameEnd", `Team: ${this.teams[1].name} won the game!`);
+        this.tdm.emit("gameEnd", {
+          message: `Team: ${this.teams[1].name} won the game!`,
+          teams: this.teams
+        });
       } else {
-        this.tdm.emit("gameEnd", `Team: ${this.teams[0].name} won the game!`);
+        this.tdm.emit("gameEnd", {
+          message: `Team: ${this.teams[0].name} won the game!`,
+          teams: this.teams
+        });
       }
     } else {
       if (this.teams[0].tickets === this.teams[1].tickets) {
-        this.tdm.emit("gameEnd", `Time run out: DRAW!`);
+        this.tdm.emit("gameEnd", {
+          message: `Time run out: DRAW!`,
+          teams: this.teams
+        });
       } else if (this.teams[0].tickets > this.teams[1].tickets) {
-        this.tdm.emit(
-          "gameEnd",
-          `Time run out! Team: ${this.teams[0].name} won the game!`
-        );
+        this.tdm.emit("gameEnd", {
+          message: `Time run out! Team: ${this.teams[0].name} won the game!`,
+          teams: this.teams
+        });
       } else {
-        this.tdm.emit(
-          "gameEnd",
-          `Time run out! Team: ${this.teams[1].name} won the game!`
-        );
+        this.tdm.emit("gameEnd", {
+          message: `Time run out! Team: ${this.teams[1].name} won the game!`,
+          teams: this.teams
+        });
       }
     }
-
     this.finished = true;
   }
 
@@ -232,19 +243,20 @@ class TeamDeatchMatch {
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
     user = await User.findById(user.sub._id);
     let player = new Player(client.id, user);
+    let shipToUpdate;
 
     if (
       this.teams[0].players.length <= this.teams[1].players.length &&
       this.teams[0].players.length < this.MAX_PLAYERS
     ) {
       player.joinTeam(this.teams[0]);
-      player.spawnShip(this.teams[0].id);
+      shipToUpdate = await player.spawnShip(this.teams[0].id);
       client.team = this.teams[0].id;
       this.playerCount++;
       this.players.push(player);
     } else if (this.teams[1].players.length < this.MAX_PLAYERS) {
       player.joinTeam(this.teams[1]);
-      player.spawnShip(this.teams[1].id);
+      shipToUpdate = await player.spawnShip(this.teams[1].id);
       client.team = this.teams[1].id;
       this.playerCount++;
       this.players.push(player);
@@ -254,33 +266,24 @@ class TeamDeatchMatch {
     }
 
     client.on("turn", mouseDir => {
-      let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined && this.running) {
-        shipToUpdate.angle = mouseDir;
-      }
+      shipToUpdate.angle = mouseDir;
     });
 
     client.on("thrusting", bool => {
-      let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined && this.running) {
-        if (bool) {
-          shipToUpdate.thrusting = true;
-        } else {
-          shipToUpdate.thrusting = false;
-        }
+      if (bool) {
+        shipToUpdate.thrusting = true;
+      } else {
+        shipToUpdate.thrusting = false;
       }
     });
 
     client.on("shooting", bool => {
-      let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined && this.running) {
-        if (bool && !shipToUpdate.isDead) {
-          let laserFired = shipToUpdate.shoot();
-          if (laserFired.laser) {
-            this.projectiles[shipToUpdate.teamId].lasers.push(laserFired.laser);
-          }
-          this.tdm.emit("laserFired", laserFired);
+      if (bool && !shipToUpdate.isDead) {
+        let laserFired = shipToUpdate.shoot();
+        if (laserFired.laser) {
+          this.projectiles[shipToUpdate.teamId].lasers.push(laserFired.laser);
         }
+        this.tdm.emit("laserFired", laserFired);
       }
     });
 
@@ -289,8 +292,13 @@ class TeamDeatchMatch {
       for (let t of this.teams) {
         for (let p = t.players.length - 1; p >= 0; p--) {
           if (t.players[p].id === client.id) {
+            t.players[p].updateStats();
             t.players.splice(p, 1);
             this.playerCount--;
+            if (this.playerCount === 0) {
+              this.finished = true;
+              return;
+            }
             for (let i = this.players.length - 1; i >= 0; i--) {
               if (this.players[i].id === client.id) {
                 this.players.splice(i, 1);

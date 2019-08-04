@@ -25,7 +25,7 @@ class Ship {
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
     this.ammo = 15;
-    this.reloadingTime = 2000;
+    this.reloadingTime = 1000;
     this.onCoolDown = false;
     this.reloading = false;
     this.shield = { hitpoints: 0 };
@@ -133,6 +133,9 @@ class Ship {
       if (thrustXY > this.speedcap) {
         this.velocity.x = thrustXNow;
         this.velocity.y = thrustYNow;
+
+        // this.velocity.x = Math.cos(this.angle) * this.speedcap;
+        // this.velocity.y = -Math.sin(this.angle) * this.speedcap;
       }
     } else {
       this.velocity.x -= (FRICTION * this.velocity.x) / FPS;

@@ -10,13 +10,12 @@ class FreeForAll {
   constructor(io, nameSpace) {
     /** Game settings */
     this.MAX_PLAYERS = 10;
-    this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
+    this.GAMELENGTH = 5 * 60; //10 * 60; // in seconds
     this.currentTime;
 
     // set up teams
     this.playerCount = 0;
     this.players = [];
-    this.leaderboard = [];
 
     /** Server */
     this.type = "freeForAll";
@@ -37,17 +36,19 @@ class FreeForAll {
         }
 
         /* Only one Player for every account */
-        for (let gM of gameServers[this.type]) {
-          for (let p of gM.players) {
-            logger.debug(
-              "Checking if user is alread assigned to a player: ",
-              p.userId + "   " + user.sub._id
-            );
+        for (let gS in gameServers) {
+          for (let gM of gameServers[gS]) {
+            for (let p of gM.players) {
+              logger.debug(
+                "Checking if user is alread assigned to a player: ",
+                p.userId + "   " + user.sub._id
+              );
 
-            if (p.userId === user.sub._id) {
-              console.log("already exists");
-              client.emit("serverInfo", "existsAlready");
-              return;
+              if (p.userId === user.sub._id) {
+                console.log("already exists");
+                client.emit("serverInfo", "existsAlready");
+                return;
+              }
             }
           }
         }
@@ -72,7 +73,6 @@ class FreeForAll {
     setInterval(this.update.bind(this), 1000 / FPS);
     setInterval(this.updateGameTime.bind(this), 1000);
     setInterval(this.updateItems.bind(this), 10000);
-    setInterval(this.updateLeaderboard.bind(this), 1000);
     this.tdm.emit("gameStarted");
   }
 
@@ -85,7 +85,7 @@ class FreeForAll {
         l.update();
       }
     }
-
+    this.updateLeaderboard();
     for (let p of this.players) {
       if (p.ship !== undefined) {
         // maybe the ship isn't created yet at this point --> player.js
@@ -159,50 +159,26 @@ class FreeForAll {
   }
 
   updateLeaderboard() {
-    this.leaderboard = [];
-    for (let p of this.players) {
-      if (this.leaderboard.length === 0) {
-        this.leaderboard.push(p);
-      } else {
-        for (let [i, leader] of this.leaderboard.entries()) {
-          if (p.stats.kills > leader.stats.kills) {
-            this.leaderboard.splice(i, 0, p);
-            break;
-          } else {
-            if (i === this.leaderboard.length - 1) {
-              this.leaderboard.push(p);
-              break;
-            }
-          }
-        }
-      }
-    }
+    this.players = this.players.sort((a, b) =>
+      a.stats.kills < b.stats.kills ? 1 : -1
+    );
   }
 
   /* Defines what happens when the game ended*/
   gameFinished() {
     this.updateLeaderboard();
     this.running = false;
-    for (let p of this.players) {
-      p.updateStats();
-    }
 
     if (this.currentTime > 0) {
-      this.tdm.emit(
-        "gameEnd",
-        JSON.stringify({
-          message: "Time run out!",
-          leaderboard: this.leaderboard
-        })
-      );
+      this.tdm.emit("gameEnd", {
+        message: "Player reached kill goal!",
+        players: this.players
+      });
     } else {
-      this.tdm.emit(
-        "gameEnd",
-        JSON.stringify({
-          message: "Player reach reached kill goal!",
-          leaderboard: this.leaderboard
-        })
-      );
+      this.tdm.emit("gameEnd", {
+        message: "Time run out!",
+        players: this.players
+      });
     }
 
     this.finished = true;
@@ -225,8 +201,7 @@ class FreeForAll {
   prepareDataToSend() {
     return {
       players: this.players,
-      items: this.items,
-      leaderboard: this.leaderboard
+      items: this.items
     };
   }
   async joinGame(client, user) {
@@ -236,44 +211,36 @@ class FreeForAll {
     user = await User.findById(user.sub._id);
 
     let player = new Player(client.id, user);
+    let shipToUpdate;
 
     if (this.players.length !== this.MAX_PLAYERS) {
       this.players.push(player);
       this.playerCount++;
-      player.spawnShip();
+      shipToUpdate = await player.spawnShip();
     } else {
       client.emit("serverInfo", "serverFull");
       return;
     }
 
     client.on("turn", mouseDir => {
-      let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined && this.running) {
-        shipToUpdate.angle = mouseDir;
-      }
+      shipToUpdate.angle = mouseDir;
     });
 
     client.on("thrusting", bool => {
-      let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined && this.running) {
-        if (bool) {
-          shipToUpdate.thrusting = true;
-        } else {
-          shipToUpdate.thrusting = false;
-        }
+      if (bool) {
+        shipToUpdate.thrusting = true;
+      } else {
+        shipToUpdate.thrusting = false;
       }
     });
 
     client.on("shooting", bool => {
-      let shipToUpdate = this.searchPlayerShip(client);
-      if (shipToUpdate !== undefined && this.running) {
-        if (bool && !shipToUpdate.isDead) {
-          let laserFired = shipToUpdate.shoot();
-          if (laserFired.laser) {
-            this.projectiles[0].lasers.push(laserFired.laser);
-          }
-          this.tdm.emit("laserFired", laserFired);
+      if (bool && !shipToUpdate.isDead) {
+        let laserFired = shipToUpdate.shoot();
+        if (laserFired.laser) {
+          this.projectiles[0].lasers.push(laserFired.laser);
         }
+        this.tdm.emit("laserFired", laserFired);
       }
     });
 
@@ -281,17 +248,17 @@ class FreeForAll {
     client.on("disconnect", () => {
       for (let i = this.players.length - 1; i >= 0; i--) {
         if (this.players[i].id === client.id) {
+          this.players[i].updateStats();
           this.players.splice(i, 1);
           this.playerCount--;
+          if (this.playerCount === 0) {
+            this.finished = true;
+            return;
+          }
           break;
         }
       }
-      for (let i = this.leaderboard.length - 1; i >= 0; i--) {
-        if (this.leaderboard[i].id === client.id) {
-          this.leaderboard.splice(i, 1);
-          break;
-        }
-      }
+
       if (this.players.length === 0) {
         this.finished = true;
       }
@@ -306,7 +273,7 @@ class FreeForAll {
       "startInfo",
       `Waiting for players: ${this.playerCount}/${this.MIN_PLAYERS}`
     );
-    if (this.playerCount === this.MIN_PLAYERS) {
+    if (this.playerCount === this.MIN_PLAYERS && !this.running) {
       let callCount = 5;
       let _this = this;
       let repeater = setInterval(function() {

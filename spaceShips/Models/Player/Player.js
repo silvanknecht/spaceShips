@@ -5,7 +5,7 @@ const ShipPreferences = require("../../../server/models/shipPreferences");
 class Player {
   constructor(id, user) {
     this.id = id;
-    this.userId = user._id;
+    this.userId = user.id;
     this.ship;
     this.name = user.nickname;
     this.isDead = false;
@@ -40,6 +40,8 @@ class Player {
         this.ship = new Fighter(teamId, this.userId);
         break;
     }
+
+    return this.ship;
   }
 
   async updateStats() {
@@ -53,6 +55,7 @@ class Player {
       },
       { $inc: { kills: this.stats.kills, deaths: this.stats.deaths } }
     );
+
     this.stats.kills = 0;
     this.stats.deaths = 0;
   }
