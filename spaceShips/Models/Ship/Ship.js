@@ -26,7 +26,7 @@ class Ship {
     this.respawnTime = TIME_DEAD * FPS;
     this.ammo = 15;
     this.reloadingTime = 2000;
-    this.timereload = false;
+    this.onCoolDown = false;
     this.reloading = false;
     this.shield = { hitpoints: 0 };
   }
@@ -143,38 +143,29 @@ class Ship {
   }
 
   shoot() {
-    if (this.ammo > 0) {
-      let laser = new Laser(
-        this.position.x,
-        this.position.y,
-        this.angle,
-        this.userId
-      );
-      this.ammo--;
-      console.log("ammo", this.ammo);
+    if (!this.onCoolDown) {
+      if (this.ammo > 0) {
+        let laser = new Laser(
+          this.position.x,
+          this.position.y,
+          this.angle,
+          this.userId
+        );
+        this.ammo--;
 
-      if (!this.timereload) {
-        this.timereload = true;
-        setTimeout(() => {
-          if (this.ammo !== 15) {
-            console.log("ammoReloaded due to time");
-            this.ammo++;
-          }
-          this.timereload = false;
-        }, 500);
+        return { laser, reloading: this.reloading };
+      } else {
+        if (!this.reloading) {
+          this.reloading = true;
+          setTimeout(() => {
+            this.ammo = 15;
+            this.reloading = false;
+          }, this.reloadingTime);
+        }
       }
-
-      return { laser, reloading: this.reloading };
+      return { reloading: this.reloading };
     } else {
-      if (!this.reloading) {
-        this.reloading = true;
-        setTimeout(() => {
-          this.ammo = 15;
-          this.reloading = false;
-        }, this.reloadingTime);
-      }
     }
-    return { reloading: this.reloading };
   }
 
   giveTeamPosition(teamId) {

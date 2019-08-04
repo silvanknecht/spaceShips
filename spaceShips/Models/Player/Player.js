@@ -5,9 +5,9 @@ const ShipPreferences = require("../../../server/models/shipPreferences");
 class Player {
   constructor(id, user) {
     this.id = id;
-    this.userId = user.sub._id;
+    this.userId = user._id;
     this.ship;
-    this.name = user.sub.nickname;
+    this.name = user.nickname;
     this.isDead = false;
     this.respawnTime = TIME_DEAD * FPS;
     this.stats = {
@@ -18,7 +18,7 @@ class Player {
 
   joinTeam(team) {
     team.players.push(this);
-      }
+  }
 
   leaveTeam(team) {
     for (let i = team.players.length - 1; i >= 0; i--) {

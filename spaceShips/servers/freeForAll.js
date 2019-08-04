@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+const User = require("../../server/models/user");
 const logger = require("../../server/middleware/logger");
 const Player = require("../Models/Player/Player");
 const Shield = require("../Models/Item/Shield");
@@ -8,7 +9,7 @@ const Shield = require("../Models/Item/Shield");
 class FreeForAll {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 20;
+    this.MAX_PLAYERS = 10;
     this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
     this.currentTime;
 
@@ -52,23 +53,6 @@ class FreeForAll {
         }
 
         this.joinGame(client, user);
-        this.tdm.emit(
-          "startInfo",
-          `Waiting for players: ${this.playerCount}/${this.MIN_PLAYERS}`
-        );
-        if (this.playerCount === this.MIN_PLAYERS) {
-          let callCount = 10;
-          let _this = this;
-          let repeater = setInterval(function() {
-            if (callCount > 0) {
-              _this.tdm.emit("startInfo", `Game starts in ${callCount}`);
-              callCount--;
-            } else {
-              clearInterval(repeater);
-              _this.start();
-            }
-          }, 1000);
-        }
       });
     });
 
@@ -245,10 +229,12 @@ class FreeForAll {
       leaderboard: this.leaderboard
     };
   }
-  joinGame(client, user) {
+  async joinGame(client, user) {
     /** Only allow a user to create a player if he isn't already in the game */
 
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
+    user = await User.findById(user.sub._id);
+
     let player = new Player(client.id, user);
 
     if (this.players.length !== this.MAX_PLAYERS) {
@@ -315,6 +301,24 @@ class FreeForAll {
     client.on("p1ng", function() {
       client.emit("p0ng");
     });
+
+    this.tdm.emit(
+      "startInfo",
+      `Waiting for players: ${this.playerCount}/${this.MIN_PLAYERS}`
+    );
+    if (this.playerCount === this.MIN_PLAYERS) {
+      let callCount = 5;
+      let _this = this;
+      let repeater = setInterval(function() {
+        if (callCount > 0) {
+          _this.tdm.emit("startInfo", `Game starts in ${callCount}`);
+          callCount--;
+        } else {
+          clearInterval(repeater);
+          _this.start();
+        }
+      }, 1000);
+    }
 
     if (this.running) {
       this.tdm.emit("gameStarted");

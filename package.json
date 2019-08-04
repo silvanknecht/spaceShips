@@ -37,6 +37,7 @@
     "passport-jwt": "^4.0.0",
     "passport-local": "^1.0.0",
     "path": "^0.12.7",
+    "socket-anti-spam": "^2.0.0",
     "socket.io": "^2.2.0",
     "triangle-circle-collision": "^1.0.4",
     "winston": "^3.2.1",

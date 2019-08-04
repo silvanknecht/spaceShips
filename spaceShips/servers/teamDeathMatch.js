@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const config = require("config");
 
+const User = require("../../server/models/user");
 const logger = require("../../server/middleware/logger");
 const Player = require("../Models/Player/Player");
 const Team = require("../Models/Team/Team");
@@ -9,7 +10,7 @@ const Shield = require("../Models/Item/Shield");
 class TeamDeatchMatch {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 2;
+    this.MAX_PLAYERS = 6;
     this.GAMELENGTH = 60 * 10; //10 * 60; // in seconds
 
     // set up teams
@@ -56,23 +57,6 @@ class TeamDeatchMatch {
           }
 
           this.joinGame(client, user);
-          this.tdm.emit(
-            "startInfo",
-            `Waiting for players: ${this.playerCount}/${this.MAX_PLAYERS}`
-          );
-          if (this.playerCount === this.MAX_PLAYERS) {
-            let callCount = 10;
-            let _this = this;
-            let repeater = setInterval(function() {
-              if (callCount > 0) {
-                _this.tdm.emit("startInfo", `Game starts in ${callCount}`);
-                callCount--;
-              } else {
-                clearInterval(repeater);
-                _this.start();
-              }
-            }, 1000);
-          }
         } else {
           console.log(`Game already in progress!`);
         }
@@ -149,12 +133,14 @@ class TeamDeatchMatch {
 
             p.ship.isDead = true;
             p.stats.deaths++;
-            for (let killer of this.teams[checkForHit.laser.teamId].players) {
-              if (killer.userId === checkForHit.laser.userId) {
-                killer.stats.kills++;
-                this.tdm.emit("killFeed", { killer, corps: p });
+            for (let k of this.players) {
+              if (checkForHit.laser.userId === p.userId) {
+                k.stats.kills++;
+                this.tdm.emit("killFeed", { killer: k, corps: p });
               }
+              break;
             }
+
             if (t.tickets === 0) {
               this.gameFinished();
             }
@@ -240,10 +226,11 @@ class TeamDeatchMatch {
   prepareDataToSend() {
     return { teams: this.teams, items: this.items };
   }
-  joinGame(client, user) {
+  async joinGame(client, user) {
     /** Only allow a user to create a player if he isn't already in the game */
 
     /** After the player has connected check if there is place on the server and what team has less players  --> place the new player in that team */
+    user = await User.findById(user.sub._id);
     let player = new Player(client.id, user);
 
     if (
@@ -307,7 +294,6 @@ class TeamDeatchMatch {
             for (let i = this.players.length - 1; i >= 0; i--) {
               if (this.players[i].id === client.id) {
                 this.players.splice(i, 1);
-                console.log(this.players);
               }
             }
           }
@@ -319,6 +305,24 @@ class TeamDeatchMatch {
     client.on("p1ng", function() {
       client.emit("p0ng");
     });
+
+    this.tdm.emit(
+      "startInfo",
+      `Waiting for players: ${this.playerCount}/${this.MAX_PLAYERS}`
+    );
+    if (this.playerCount === this.MAX_PLAYERS) {
+      let callCount = 5;
+      let _this = this;
+      let repeater = setInterval(function() {
+        if (callCount > 0) {
+          _this.tdm.emit("startInfo", `Game starts in ${callCount}`);
+          callCount--;
+        } else {
+          clearInterval(repeater);
+          _this.start();
+        }
+      }, 1000);
+    }
   }
 }
 

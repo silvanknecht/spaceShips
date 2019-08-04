@@ -507,23 +507,25 @@ function moveLaser(laser) {
 }
 
 function createLeaderBoard(leaderboard) {
-  leaderboardTb.innerHTML = "";
-  let rank = leaderboard.length;
+  if (myShip !== undefined) {
+    leaderboardTb.innerHTML = "";
+    let rank = leaderboard.length;
 
-  for (let [i, p] of leaderboard.reverse().entries()) {
-    let row = leaderboardTb.insertRow(0);
-    if (myShip.userId === p.userId) {
-      row.style = "font-weight: bold";
+    for (let [i, p] of leaderboard.reverse().entries()) {
+      let row = leaderboardTb.insertRow(0);
+      if (myShip.userId === p.userId) {
+        row.style = "font-weight: bold";
+      }
+
+      let cell = row.insertCell(0);
+      cell.innerHTML = rank;
+      cell = row.insertCell(1);
+      cell.innerHTML = p.name;
+      cell = row.insertCell(2);
+      cell.innerHTML = p.stats.kills;
+      cell = row.insertCell(3);
+      cell.innerHTML = p.stats.deaths;
+      rank--;
     }
-
-    let cell = row.insertCell(0);
-    cell.innerHTML = rank;
-    cell = row.insertCell(1);
-    cell.innerHTML = p.name;
-    cell = row.insertCell(2);
-    cell.innerHTML = p.stats.kills;
-    cell = row.insertCell(3);
-    cell.innerHTML = p.stats.deaths;
-    rank--;
   }
 }

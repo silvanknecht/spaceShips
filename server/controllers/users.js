@@ -114,6 +114,7 @@ module.exports = {
         { _id: new mongoose.Types.ObjectId(_id) },
         { $set: { nickname } }
       );
+      logger.debug("nickname update", nickname);
       res.json({ message: `User with ID: ${_id} updated sucessfully` });
     } catch (error) {
       res.status(404);
