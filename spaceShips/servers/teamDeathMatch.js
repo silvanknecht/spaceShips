@@ -10,7 +10,7 @@ const Shield = require("../Models/Item/Shield");
 class TeamDeatchMatch {
   constructor(io, nameSpace) {
     /** Game settings */
-    this.MAX_PLAYERS = 2;
+    this.MAX_PLAYERS = 8;
     this.GAMELENGTH = 60 * 5; //10 * 60; // in seconds
 
     // set up teams
